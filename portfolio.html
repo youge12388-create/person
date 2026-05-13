@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>游丰奕 - 作品集</title>
+  <style>
+    :root{
+      --bg:#f7f8fc;
+      --panel:#fff;
+      --text:#101828;
+      --muted:#667085;
+      --soft:#98a2b3;
+      --line:rgba(31,92,255,.12);
+      --blue:#1f5cff;
+      --blue-2:#2f6af5;
+      --shadow:0 18px 46px rgba(15,23,42,.07);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-width:320px;
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(31,92,255,.08), transparent 22%),
+        radial-gradient(circle at 86% 8%, rgba(116,168,255,.12), transparent 18%),
+        linear-gradient(180deg,#fff 0%,var(--bg) 100%);
+    }
+    a{color:inherit;text-decoration:none}
+    img{display:block;max-width:100%}
+    .page{
+      width:min(1320px, calc(100vw - 44px));
+      margin:0 auto;
+      padding:22px 0 46px;
+    }
+    .topbar{
+      min-height:74px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      padding:14px 18px;
+      border:1px solid rgba(255,255,255,.92);
+      border-radius:22px;
+      background:rgba(255,255,255,.84);
+      box-shadow:0 10px 30px rgba(15,23,42,.05);
+      backdrop-filter:blur(18px);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
+    }
+    .brand-mark{
+      width:42px;height:42px;border-radius:14px;
+      display:grid;place-items:center;
+      color:#fff;
+      background:linear-gradient(135deg,var(--blue),#74a8ff);
+      box-shadow:0 12px 24px rgba(31,92,255,.22);
+    }
+    .brand small{
+      display:block;
+      margin-top:3px;
+      color:var(--soft);
+      font-size:12px;
+      font-weight:700;
+    }
+    .home-link,.link-btn{
+      min-height:44px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0 18px;
+      border:1px solid rgba(31,92,255,.14);
+      border-radius:14px;
+      color:var(--blue);
+      background:#f3f7ff;
+      font-weight:800;
+      transition:.22s ease;
+    }
+    .home-link:hover,.link-btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 12px 24px rgba(31,92,255,.12);
+    }
+    .hero{
+      display:grid;
+      grid-template-columns:minmax(0,.92fr) minmax(420px,1.08fr);
+      gap:22px;
+      margin-top:26px;
+    }
+    .hero-copy,.hero-visual,.work-card,.notice{
+      border:1px solid rgba(255,255,255,.92);
+      border-radius:var(--radius);
+      background:rgba(255,255,255,.9);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(18px);
+    }
+    .hero-copy{
+      min-height:420px;
+      padding:42px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+    .eyebrow{
+      width:max-content;
+      margin:0 0 22px;
+      padding:8px 12px;
+      border-radius:999px;
+      color:var(--blue);
+      background:#f3f7ff;
+      font-size:13px;
+      font-weight:900;
+    }
+    h1{
+      max-width:680px;
+      margin:0;
+      font-size:clamp(48px,6vw,82px);
+      line-height:1;
+      letter-spacing:-.04em;
+    }
+    .hero-copy p{
+      max-width:620px;
+      margin:24px 0 0;
+      color:var(--muted);
+      font-size:18px;
+      line-height:1.85;
+    }
+    .hero-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:34px;
+    }
+    .link-btn.primary{
+      color:#fff;
+      border-color:var(--blue);
+      background:linear-gradient(135deg,var(--blue),var(--blue-2));
+      box-shadow:0 16px 30px rgba(31,92,255,.22);
+    }
+    .hero-visual{
+      min-height:420px;
+      overflow:hidden;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:1px;
+      background:rgba(31,92,255,.10);
+    }
+    .preview-tile{
+      min-height:210px;
+      position:relative;
+      overflow:hidden;
+      background:#fff;
+    }
+    .preview-tile img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      filter:saturate(.98) contrast(.98);
+    }
+    .preview-tile span{
+      position:absolute;
+      left:14px;
+      bottom:14px;
+      padding:7px 10px;
+      border-radius:999px;
+      color:#fff;
+      background:rgba(16,24,40,.68);
+      font-size:12px;
+      font-weight:800;
+      backdrop-filter:blur(10px);
+    }
+    .section{
+      margin-top:44px;
+    }
+    .section-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:18px;
+      margin-bottom:18px;
+    }
+    .section-head h2{
+      margin:0;
+      font-size:34px;
+      letter-spacing:-.035em;
+    }
+    .section-head p{
+      max-width:520px;
+      margin:0;
+      color:var(--muted);
+      line-height:1.7;
+    }
+    .work-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:18px;
+    }
+    .work-card{
+      overflow:hidden;
+      min-height:390px;
+      transition:.22s ease;
+    }
+    .work-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 24px 54px rgba(15,23,42,.1);
+    }
+    .cover{
+      height:190px;
+      overflow:hidden;
+      border-bottom:1px solid var(--line);
+      background:#eef4ff;
+    }
+    .cover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+    .work-body{
+      padding:22px;
+    }
+    .type{
+      display:inline-flex;
+      margin-bottom:12px;
+      padding:6px 9px;
+      border-radius:8px;
+      color:var(--blue);
+      background:#f3f7ff;
+      font-size:12px;
+      font-weight:900;
+    }
+    .work-body h3{
+      margin:0 0 10px;
+      font-size:23px;
+      line-height:1.25;
+      letter-spacing:-.02em;
+    }
+    .work-body p{
+      margin:0 0 18px;
+      color:var(--muted);
+      line-height:1.75;
+    }
+    .placeholder{
+      min-height:44px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px dashed rgba(31,92,255,.3);
+      border-radius:12px;
+      color:var(--blue);
+      background:#f8fbff;
+      font-size:14px;
+      font-weight:800;
+    }
+    .placeholder.ready{
+      border-style:solid;
+      color:#fff;
+      background:linear-gradient(135deg,var(--blue),var(--blue-2));
+      box-shadow:0 12px 24px rgba(31,92,255,.18);
+    }
+    .notice{
+      margin-top:24px;
+      padding:24px 28px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      color:var(--muted);
+    }
+    .notice strong{
+      display:block;
+      margin-bottom:6px;
+      color:var(--text);
+      font-size:22px;
+    }
+    @media (max-width:980px){
+      .hero,.work-grid{grid-template-columns:1fr}
+      .hero-visual{grid-template-columns:1fr 1fr}
+      .notice,.section-head{align-items:flex-start;flex-direction:column}
+    }
+    @media (max-width:620px){
+      .page{width:min(100vw - 24px,1320px)}
+      .topbar{align-items:flex-start;flex-direction:column}
+      .hero-copy{padding:28px}
+      .hero-visual{grid-template-columns:1fr}
+      .preview-tile{min-height:180px}
+      h1{font-size:44px}
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">YY</span>
+        <span>游丰奕作品集<small>视频链接 / PDF 漫画链接 / 项目案例</small></span>
+      </a>
+      <a class="home-link" href="index.html">返回首页</a>
+    </header>
+
+    <section class="hero">
+      <article class="hero-copy">
+        <div>
+          <p class="eyebrow">Portfolio Links</p>
+          <h1>作品集链接页</h1>
+          <p>这里专门用来放视频作品、PDF 漫画、项目看板和自动化案例链接。现在先搭好结构，后面你把链接发我，我可以直接替换到对应按钮里。</p>
+          <div class="hero-actions">
+            <a class="link-btn primary" href="#videos">视频作品</a>
+            <a class="link-btn" href="#comics">PDF / 漫画</a>
+            <a class="link-btn" href="#projects">项目案例</a>
+          </div>
+        </div>
+      </article>
+
+      <aside class="hero-visual" aria-label="作品预览">
+        <div class="preview-tile"><img src="src/image/ai短视频.png" alt="AI 短视频预览"><span>视频作品</span></div>
+        <div class="preview-tile"><img src="src/image/ai漫画.png" alt="AI 漫画预览"><span>PDF 漫画</span></div>
+        <div class="preview-tile"><img src="src/image/自动化订单.png" alt="自动化订单预览"><span>自动化案例</span></div>
+        <div class="preview-tile"><img src="src/image/竞品分析看板.png" alt="竞品看板预览"><span>数据看板</span></div>
+      </aside>
+    </section>
+
+    <section class="section" id="videos">
+      <div class="section-head">
+        <h2>视频作品链接</h2>
+        <p>适合放 AI 短剧、短视频、教程视频、演示视频。按钮目前是占位链接，等你提供真实地址后替换。</p>
+      </div>
+      <div class="work-grid">
+        <article class="work-card">
+          <div class="cover"><img src="src/image/ai短视频.png" alt="AI 短剧视频"></div>
+          <div class="work-body">
+            <span class="type">BILIBILI</span>
+            <h3>秦始皇 AI 视频</h3>
+            <p>AI 历史题材视频作品，展示人物叙事、画面生成与视频成片能力。</p>
+            <a class="placeholder ready" href="https://www.bilibili.com/video/BV1LH5m6eE2Q/" target="_blank" rel="noopener noreferrer">打开视频链接</a>
+          </div>
+        </article>
+        <article class="work-card">
+          <div class="cover"><img src="src/image/竞品分析看板.png" alt="项目演示视频"></div>
+          <div class="work-body">
+            <span class="type">BILIBILI</span>
+            <h3>商业 IP 视频</h3>
+            <p>商业 IP 方向视频作品，适合展示内容策划、视觉包装和成片表达。</p>
+            <a class="placeholder ready" href="https://b23.tv/11UzaQ3" target="_blank" rel="noopener noreferrer">打开视频链接</a>
+          </div>
+        </article>
+        <article class="work-card">
+          <div class="cover"><img src="src/image/ai漫画.png" alt="AI 漫画 PDF"></div>
+          <div class="work-body">
+            <span class="type">PDF</span>
+            <h3>AI人生故事漫画书</h3>
+            <p>完整 PDF 漫画作品，可在线打开阅读或下载保存。</p>
+            <a class="placeholder ready" href="https://pub-98883ac0c65744c08003052b6383674c.r2.dev/%E9%99%88%E6%96%87%E5%BC%BA%C2%B7%E4%BA%BA%E7%94%9F%E6%95%85%E4%BA%8B%E6%BC%AB%E7%94%BB%E4%B9%A6%E3%80%8CB5%E3%80%8D_20260401135202.pdf" target="_blank" rel="noopener noreferrer">打开 PDF 漫画</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="comics">
+      <div class="section-head">
+        <h2>PDF / 漫画链接</h2>
+        <p>适合放 PDF 漫画、分镜文档、角色设定、作品集 PDF 或可下载资料。</p>
+      </div>
+      <div class="work-grid">
+        <article class="work-card">
+          <div class="cover"><img src="src/image/评论区数据采集.png" alt="教程视频"></div>
+          <div class="work-body">
+            <span class="type">COURSE</span>
+            <h3>Codex 插件 AI 教程视频</h3>
+            <p>用 Codex 结合插件制作的 AI 视频教程，展示自动化创作与视频生成流程。</p>
+            <a class="placeholder ready" href="https://pub-811811f0b6c64552b2c70442581cda17.r2.dev/codex-hyperframes-vs-remotion.mp4" target="_blank" rel="noopener noreferrer">打开教程视频</a>
+          </div>
+        </article>
+        <article class="work-card">
+          <div class="cover"><img src="src/image/ai漫画.png" alt="漫画分镜"></div>
+          <div class="work-body">
+            <span class="type">STORYBOARD</span>
+            <h3>漫画分镜作品</h3>
+            <p>用于展示分镜、角色一致性和批量出图能力。</p>
+            <a class="placeholder" href="#" aria-disabled="true">待添加分镜链接</a>
+          </div>
+        </article>
+        <article class="work-card">
+          <div class="cover"><img src="src/image/职业照.png" alt="作品集 PDF"></div>
+          <div class="work-body">
+            <span class="type">PORTFOLIO</span>
+            <h3>作品集 PDF</h3>
+            <p>可以放完整作品集 PDF、简历 PDF 或资料包链接。</p>
+            <a class="placeholder" href="#" aria-disabled="true">待添加作品集链接</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="projects">
+      <div class="section-head">
+        <h2>项目案例链接</h2>
+        <p>这里放自动化流程、数据采集、竞品分析看板等可展示项目。</p>
+      </div>
+      <div class="work-grid">
+        <article class="work-card">
+          <div class="cover"><img src="src/image/自动化订单.png" alt="自动化订单"></div>
+          <div class="work-body">
+            <span class="type">RPA</span>
+            <h3>自动化订单流程</h3>
+            <p>展示 RPA 自动处理、流程设计和效率提升成果。</p>
+            <a class="placeholder" href="#" aria-disabled="true">待添加项目链接</a>
+          </div>
+        </article>
+        <article class="work-card">
+          <div class="cover"><img src="src/image/评论区数据采集.png" alt="评论数据采集"></div>
+          <div class="work-body">
+            <span class="type">DATA</span>
+            <h3>评论数据采集</h3>
+            <p>展示数据采集、清洗、分析和可视化流程。</p>
+            <a class="placeholder" href="#" aria-disabled="true">待添加数据链接</a>
+          </div>
+        </article>
+        <article class="work-card">
+          <div class="cover"><img src="src/image/竞品分析看板.png" alt="竞品分析看板"></div>
+          <div class="work-body">
+            <span class="type">DASHBOARD</span>
+            <h3>竞品分析看板</h3>
+            <p>展示竞品信息整理、指标监控和分析看板能力。</p>
+            <a class="placeholder" href="#" aria-disabled="true">待添加看板链接</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="notice">
+      <div>
+        <strong>下一步只需要把链接发我</strong>
+        <span>视频链接、PDF 链接、飞书/网盘/网页地址都可以，我会放到对应作品卡片上。</span>
+      </div>
+      <a class="link-btn primary" href="index.html">返回首页</a>
+    </section>
+  </main>
+</body>
+</html>

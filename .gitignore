@@ -1,0 +1,10 @@
+node_modules/
+dist/
+
+# Local reference captures
+/*.png
+*-check.png
+
+# Local backups
+*.backup.html
+index.static-backup.html
