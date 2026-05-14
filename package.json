@@ -1,17 +1,17 @@
 {
 	"name": "ge_ren",
 	"version": "1.0.0",
-  "description": "Personal resume website with React Bits animations.",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1"
-  },
+	"description": "Personal resume website with React Bits animations.",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite --host 127.0.0.1",
+		"build": "vite build && node scripts/copy-portfolio.mjs",
+		"preview": "vite preview --host 127.0.0.1"
+	},
 	"keywords": [],
 	"author": "",
-  "license": "ISC",
+	"license": "ISC",
 	"dependencies": {
 		"@gsap/react": "^2.1.2",
 		"@vitejs/plugin-react": "^6.0.1",
@@ -24,6 +24,8 @@
 		"vite": "^8.0.12"
 	},
 	"devDependencies": {
+		"@emnapi/core": "^1.10.0",
+		"@emnapi/runtime": "^1.10.0",
 		"jsrepo": "^3.7.0"
 	}
 }

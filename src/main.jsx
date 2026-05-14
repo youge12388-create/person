@@ -34,14 +34,16 @@ import {
   Workflow,
 } from 'lucide-react';
 import Particles from './components/Particles/Particles.jsx';
-import portraitImage from './image/职业照片2.png';
-import portraitImageMobile from './image/职业照片3.png';
-import videoImage from './image/ai短视频.png';
-import comicImage from './image/ai漫画.png';
-import orderImage from './image/自动化订单.png';
-import commentImage from './image/评论区数据采集.png';
-import dashboardImage from './image/竞品分析看板.png';
 import './styles.css';
+
+const asset = (name) => `${import.meta.env.BASE_URL}image/${name}`;
+const portraitImage = asset('职业照片2.png');
+const portraitImageMobile = asset('职业照片3.png');
+const videoImage = asset('ai短视频.png');
+const comicImage = asset('ai漫画.png');
+const orderImage = asset('自动化订单.png');
+const commentImage = asset('评论区数据采集.png');
+const dashboardImage = asset('竞品分析看板.png');
 
 const navItems = [
   ['首页', '#home'],
