@@ -28,6 +28,7 @@
         radial-gradient(circle at 10% 10%, rgba(31,92,255,.08), transparent 22%),
         radial-gradient(circle at 86% 8%, rgba(116,168,255,.12), transparent 18%),
         linear-gradient(180deg,#fff 0%,var(--bg) 100%);
+      overflow-x:hidden;
     }
     a{color:inherit;text-decoration:none}
     img{display:block;max-width:100%}
@@ -82,6 +83,27 @@
       background:#f3f7ff;
       font-weight:800;
       transition:.22s ease;
+    }
+    .menu-btn{
+      width:44px;
+      height:44px;
+      display:none;
+      place-items:center;
+      border:1px solid rgba(31,92,255,.14);
+      border-radius:14px;
+      color:#182230;
+      background:rgba(255,255,255,.82);
+      box-shadow:0 10px 22px rgba(15,23,42,.05);
+      font-size:24px;
+      line-height:1;
+    }
+    .topbar-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .section-more{
+      display:none;
     }
     .home-link:hover,.link-btn:hover{
       transform:translateY(-2px);
@@ -155,18 +177,22 @@
       min-height:210px;
       position:relative;
       overflow:hidden;
-      background:#fff;
+      padding:12px;
+      background:linear-gradient(180deg,#f7faff 0%,#eef4ff 100%);
     }
     .preview-tile img{
       width:100%;
       height:100%;
       object-fit:cover;
       filter:saturate(.98) contrast(.98);
+      border-radius:18px;
+      box-shadow:0 14px 30px rgba(15,23,42,.18);
+      border:1px solid rgba(214,225,239,.9);
     }
     .preview-tile span{
       position:absolute;
-      left:14px;
-      bottom:14px;
+      left:28px;
+      bottom:28px;
       padding:7px 10px;
       border-radius:999px;
       color:#fff;
@@ -278,18 +304,341 @@
       color:var(--text);
       font-size:22px;
     }
+    .project-links{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:18px;
+    }
+    .project-mini{
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.92);
+      border-radius:var(--radius);
+      background:rgba(255,255,255,.9);
+      box-shadow:var(--shadow);
+    }
+    .project-mini img{
+      width:100%;
+      height:150px;
+      object-fit:cover;
+      border-bottom:1px solid var(--line);
+    }
+    .project-mini.empty .placeholder{
+      border-color:rgba(148,163,184,.36);
+      color:#64748b;
+      background:#f8fafc;
+      box-shadow:none;
+      pointer-events:none;
+    }
+    .project-mini-body{
+      padding:18px;
+    }
+    .project-mini h3{
+      margin:0 0 8px;
+      font-size:20px;
+    }
+    .project-mini p{
+      min-height:50px;
+      margin:0 0 14px;
+      color:var(--muted);
+      line-height:1.65;
+      font-size:14px;
+    }
     @media (max-width:980px){
       .hero,.work-grid{grid-template-columns:1fr}
       .hero-visual{grid-template-columns:1fr 1fr}
       .notice,.section-head{align-items:flex-start;flex-direction:column}
+      .project-links{grid-template-columns:1fr}
     }
     @media (max-width:620px){
-      .page{width:min(100vw - 24px,1320px)}
-      .topbar{align-items:flex-start;flex-direction:column}
-      .hero-copy{padding:28px}
-      .hero-visual{grid-template-columns:1fr}
-      .preview-tile{min-height:180px}
-      h1{font-size:44px}
+      body{
+        background:
+          radial-gradient(circle at 18% 8%, rgba(31,92,255,.08), transparent 24%),
+          linear-gradient(180deg,#f7fbff 0%,#eef5ff 100%);
+      }
+      .page{
+        width:100%;
+        max-width:430px;
+        overflow:hidden;
+        padding:18px 14px 28px;
+      }
+      .topbar{
+        min-height:60px;
+        flex-direction:row;
+        align-items:center;
+        padding:0 4px 16px;
+        border:0;
+        border-radius:0;
+        background:transparent;
+        box-shadow:none;
+        backdrop-filter:none;
+      }
+      .brand{
+        min-width:0;
+        flex:1 1 auto;
+        gap:10px;
+      }
+      .brand-mark{
+        width:48px;
+        height:48px;
+        border-radius:14px;
+        font-size:20px;
+      }
+      .brand span{
+        min-width:0;
+        font-size:18px;
+        line-height:1.25;
+      }
+      .brand small{
+        max-width:160px;
+        overflow:hidden;
+        white-space:nowrap;
+        text-overflow:ellipsis;
+        font-size:12px;
+      }
+      .topbar-actions{
+        flex:0 0 auto;
+        display:flex;
+        align-items:center;
+        gap:10px;
+      }
+      .home-link{
+        min-height:38px;
+        padding:0 12px;
+        border-radius:11px;
+        font-size:14px;
+        background:#f3f7ff;
+        white-space:nowrap;
+      }
+      .menu-btn{
+        display:grid;
+        flex:0 0 auto;
+      }
+      .hero{
+        grid-template-columns:42% 58%;
+        gap:0;
+        margin-top:4px;
+        overflow:hidden;
+        border:1px solid rgba(255,255,255,.92);
+        border-radius:20px;
+        background:rgba(255,255,255,.92);
+        box-shadow:0 16px 34px rgba(15,23,42,.06);
+      }
+      .hero-copy,
+      .hero-visual{
+        min-width:0;
+        min-height:230px;
+        border:0;
+        border-radius:0;
+        box-shadow:none;
+        backdrop-filter:none;
+      }
+      .hero-copy{
+        padding:52px 10px 18px 18px;
+      }
+      .eyebrow{
+        margin-bottom:12px;
+        padding:0;
+        color:#596b90;
+        background:transparent;
+        font-size:14px;
+      }
+      h1{
+        font-size:30px;
+        line-height:1.08;
+        letter-spacing:0;
+      }
+      .hero-actions{
+        margin-top:20px;
+        gap:8px;
+      }
+      .link-btn{
+        min-height:36px;
+        padding:0 12px;
+        border-radius:11px;
+        font-size:13px;
+      }
+      .hero-visual{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        min-width:0;
+        padding:8px 8px 8px 0;
+        background:transparent;
+      }
+      .preview-tile{
+        min-width:0;
+        min-height:100px;
+        padding:0;
+        border-radius:10px;
+        background:#eef4ff;
+      }
+      .preview-tile img{
+        border:0;
+        border-radius:10px;
+        box-shadow:none;
+      }
+      .preview-tile span{
+        left:8px;
+        bottom:8px;
+        max-width:calc(100% - 16px);
+        padding:4px 7px;
+        border-radius:8px;
+        font-size:11px;
+      }
+      .section{
+        margin-top:24px;
+      }
+      .section-head{
+        flex-direction:row;
+        align-items:center;
+        min-width:0;
+        margin-bottom:12px;
+      }
+      .section-head h2{
+        position:relative;
+        padding-left:12px;
+        font-size:18px;
+        letter-spacing:0;
+      }
+      .section-head h2::before{
+        content:"";
+        position:absolute;
+        left:0;
+        top:3px;
+        bottom:3px;
+        width:4px;
+        border-radius:999px;
+        background:var(--blue);
+      }
+      .section-head p{
+        display:none;
+      }
+      .section-more{
+        flex:0 0 auto;
+        display:inline-flex;
+        color:#667085;
+        font-size:13px;
+        font-weight:700;
+        white-space:nowrap;
+      }
+      .work-grid{
+        grid-template-columns:1fr;
+        gap:10px;
+      }
+      .work-card{
+        min-width:0;
+        min-height:0;
+        display:grid;
+        grid-template-columns:40% 1fr;
+        align-items:center;
+        overflow:hidden;
+        border-radius:13px;
+        box-shadow:0 10px 24px rgba(15,23,42,.045);
+      }
+      .cover{
+        height:112px;
+        border:0;
+        padding:8px;
+        background:transparent;
+      }
+      .cover img{
+        border-radius:9px;
+      }
+      .work-body{
+        min-width:0;
+        padding:12px 12px 12px 4px;
+      }
+      .type{
+        margin-bottom:5px;
+        padding:3px 6px;
+        border-radius:6px;
+        font-size:10px;
+      }
+      .work-body h3{
+        margin-bottom:4px;
+        font-size:15px;
+        letter-spacing:0;
+      }
+      .work-body p{
+        display:-webkit-box;
+        margin-bottom:8px;
+        overflow:hidden;
+        color:#53637f;
+        font-size:12px;
+        line-height:1.55;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+      }
+      .placeholder{
+        width:max-content;
+        max-width:100%;
+        min-height:32px;
+        padding:0 12px;
+        border-radius:10px;
+        font-size:12px;
+      }
+      .project-links{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:10px;
+      }
+      .project-mini{
+        min-width:0;
+        border-radius:12px;
+        box-shadow:0 10px 24px rgba(15,23,42,.045);
+      }
+      .project-mini img{
+        height:70px;
+      }
+      .project-mini-body{
+        padding:10px;
+      }
+      .project-mini h3{
+        margin-bottom:4px;
+        font-size:13px;
+        line-height:1.35;
+      }
+      .project-mini p{
+        min-height:46px;
+        display:-webkit-box;
+        margin-bottom:8px;
+        overflow:hidden;
+        font-size:11px;
+        line-height:1.45;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+      }
+      .project-mini .placeholder{
+        width:100%;
+        min-height:28px;
+        padding:0 10px;
+        font-size:11px;
+      }
+      .notice{
+        margin-top:22px;
+        padding:14px;
+        flex-direction:row;
+        align-items:center;
+        gap:12px;
+        border-radius:18px;
+        color:#fff;
+        background:linear-gradient(135deg,var(--blue),var(--blue-2));
+      }
+      .notice strong{
+        margin:0 0 3px;
+        color:#fff;
+        font-size:15px;
+      }
+      .notice p{
+        margin:0;
+        color:rgba(255,255,255,.9);
+        font-size:12px;
+        line-height:1.5;
+      }
+      .notice .home-link{
+        flex:0 0 auto;
+        color:var(--blue);
+        background:#fff;
+      }
     }
   </style>
 </head>
@@ -300,7 +649,10 @@
         <span class="brand-mark">YY</span>
         <span>游丰奕作品集<small>视频链接 / PDF 漫画链接 / 项目案例</small></span>
       </a>
-      <a class="home-link" href="index.html">返回首页</a>
+      <div class="topbar-actions">
+        <a class="home-link" href="index.html">返回首页</a>
+        <span class="menu-btn" aria-hidden="true">☰</span>
+      </div>
     </header>
 
     <section class="hero">
@@ -308,11 +660,9 @@
         <div>
           <p class="eyebrow">Portfolio Links</p>
           <h1>作品集链接页</h1>
-          <p>这里专门用来放视频作品、PDF 漫画、项目看板和自动化案例链接。现在先搭好结构，后面你把链接发我，我可以直接替换到对应按钮里。</p>
           <div class="hero-actions">
             <a class="link-btn primary" href="#videos">视频作品</a>
             <a class="link-btn" href="#comics">PDF / 漫画</a>
-            <a class="link-btn" href="#projects">项目案例</a>
           </div>
         </div>
       </article>
@@ -320,15 +670,15 @@
       <aside class="hero-visual" aria-label="作品预览">
         <div class="preview-tile"><img src="src/image/ai短视频.png" alt="AI 短视频预览"><span>视频作品</span></div>
         <div class="preview-tile"><img src="src/image/ai漫画.png" alt="AI 漫画预览"><span>PDF 漫画</span></div>
-        <div class="preview-tile"><img src="src/image/自动化订单.png" alt="自动化订单预览"><span>自动化案例</span></div>
-        <div class="preview-tile"><img src="src/image/竞品分析看板.png" alt="竞品看板预览"><span>数据看板</span></div>
+        <div class="preview-tile"><img src="src/image/openclaw.webp" alt="OpenClaw SOP 预览"><span>OpenClaw SOP</span></div>
+        <div class="preview-tile"><img src="src/image/github.png" alt="GitHub 项目预览"><span>GitHub 项目</span></div>
       </aside>
     </section>
 
     <section class="section" id="videos">
       <div class="section-head">
         <h2>视频作品链接</h2>
-        <p>适合放 AI 短剧、短视频、教程视频、演示视频。按钮目前是占位链接，等你提供真实地址后替换。</p>
+        <a class="section-more" href="#videos">查看全部 &gt;</a>
       </div>
       <div class="work-grid">
         <article class="work-card">
@@ -337,7 +687,7 @@
             <span class="type">BILIBILI</span>
             <h3>秦始皇 AI 视频</h3>
             <p>AI 历史题材视频作品，展示人物叙事、画面生成与视频成片能力。</p>
-            <a class="placeholder ready" href="https://www.bilibili.com/video/BV1LH5m6eE2Q/" target="_blank" rel="noopener noreferrer">打开视频链接</a>
+            <a class="placeholder ready" href="https://pub-60f31e9a394e423894e3e6569a406819.r2.dev/53c5832a6478d26a78c0ccd9c50540a5.mp4" target="_blank" rel="noopener noreferrer">打开视频链接</a>
           </div>
         </article>
         <article class="work-card">
@@ -364,6 +714,7 @@
     <section class="section" id="comics">
       <div class="section-head">
         <h2>PDF / 漫画链接</h2>
+        <a class="section-more" href="#comics">查看全部 &gt;</a>
         <p>适合放 PDF 漫画、分镜文档、角色设定、作品集 PDF 或可下载资料。</p>
       </div>
       <div class="work-grid">
@@ -377,57 +728,54 @@
           </div>
         </article>
         <article class="work-card">
-          <div class="cover"><img src="src/image/ai漫画.png" alt="漫画分镜"></div>
+          <div class="cover"><img src="src/image/openclaw.webp" alt="OpenClaw SOP"></div>
           <div class="work-body">
-            <span class="type">STORYBOARD</span>
-            <h3>漫画分镜作品</h3>
-            <p>用于展示分镜、角色一致性和批量出图能力。</p>
-            <a class="placeholder" href="#" aria-disabled="true">待添加分镜链接</a>
+            <span class="type">SOP</span>
+            <h3>openclaw-sop</h3>
+            <p>OpenClaw 使用流程与操作说明，可在线打开查看。</p>
+            <a class="placeholder ready" href="https://scnbmcv53xfk.feishu.cn/wiki/CgXBwaSPxiFpgkk0oCKc0myUn0c?from=from_copylink" target="_blank" rel="noopener noreferrer">打开 SOP 链接</a>
           </div>
         </article>
         <article class="work-card">
-          <div class="cover"><img src="src/image/职业照.png" alt="作品集 PDF"></div>
+          <div class="cover"><img src="src/image/github.png" alt="GitHub 个人开源项目"></div>
           <div class="work-body">
-            <span class="type">PORTFOLIO</span>
-            <h3>作品集 PDF</h3>
-            <p>可以放完整作品集 PDF、简历 PDF 或资料包链接。</p>
-            <a class="placeholder" href="#" aria-disabled="true">待添加作品集链接</a>
+            <span class="type">GITHUB</span>
+            <h3>github个人开源项目</h3>
+            <p>用于展示 GitHub 上的个人开源项目、代码仓库与项目说明。</p>
+            <a class="placeholder ready" href="https://github.com/youge12388-create" target="_blank" rel="noopener noreferrer">打开 GitHub 项目</a>
           </div>
         </article>
       </div>
     </section>
 
-    <section class="section" id="projects">
+    <section class="section" id="cases">
       <div class="section-head">
         <h2>项目案例链接</h2>
-        <p>这里放自动化流程、数据采集、竞品分析看板等可展示项目。</p>
+        <a class="section-more" href="#cases">查看全部 &gt;</a>
       </div>
-      <div class="work-grid">
-        <article class="work-card">
-          <div class="cover"><img src="src/image/自动化订单.png" alt="自动化订单"></div>
-          <div class="work-body">
-            <span class="type">RPA</span>
-            <h3>自动化订单流程</h3>
-            <p>展示 RPA 自动处理、流程设计和效率提升成果。</p>
-            <a class="placeholder" href="#" aria-disabled="true">待添加项目链接</a>
+      <div class="project-links">
+        <article class="project-mini">
+          <img src="src/image/ai短视频.png" alt="AIGC 短片项目">
+          <div class="project-mini-body">
+            <h3>AIGC 短片项目</h3>
+            <p>AI+后期短片创作，完整流程从脚本到成片。</p>
+            <a class="placeholder ready" href="https://pub-60f31e9a394e423894e3e6569a406819.r2.dev/53c5832a6478d26a78c0ccd9c50540a5.mp4" target="_blank" rel="noopener noreferrer">查看案例</a>
           </div>
         </article>
-        <article class="work-card">
-          <div class="cover"><img src="src/image/评论区数据采集.png" alt="评论数据采集"></div>
-          <div class="work-body">
-            <span class="type">DATA</span>
-            <h3>评论数据采集</h3>
-            <p>展示数据采集、清洗、分析和可视化流程。</p>
-            <a class="placeholder" href="#" aria-disabled="true">待添加数据链接</a>
+        <article class="project-mini empty">
+          <img src="src/image/自动化订单.png" alt="电商视觉设计">
+          <div class="project-mini-body">
+            <h3>电商视觉设计</h3>
+            <p>电商主图、详情页、活动页设计案例。</p>
+            <span class="placeholder">待补充</span>
           </div>
         </article>
-        <article class="work-card">
-          <div class="cover"><img src="src/image/竞品分析看板.png" alt="竞品分析看板"></div>
-          <div class="work-body">
-            <span class="type">DASHBOARD</span>
-            <h3>竞品分析看板</h3>
-            <p>展示竞品信息整理、指标监控和分析看板能力。</p>
-            <a class="placeholder" href="#" aria-disabled="true">待添加看板链接</a>
+        <article class="project-mini empty">
+          <img src="src/image/竞品分析看板.png" alt="数据可视化项目">
+          <div class="project-mini-body">
+            <h3>数据可视化项目</h3>
+            <p>数据大屏与可视化看板，支持多端展示。</p>
+            <span class="placeholder">待补充</span>
           </div>
         </article>
       </div>
@@ -435,11 +783,12 @@
 
     <section class="notice">
       <div>
-        <strong>下一步只需要把链接发我</strong>
-        <span>视频链接、PDF 链接、飞书/网盘/网页地址都可以，我会放到对应作品卡片上。</span>
+        <strong>需要完整链接或作品包，可直接联系我获取</strong>
+        <p>项目资料 / 高清文件 / 商务合作</p>
       </div>
-      <a class="link-btn primary" href="index.html">返回首页</a>
+      <a class="home-link" href="mailto:you123886@163.com">联系获取</a>
     </section>
+
   </main>
 </body>
 </html>
