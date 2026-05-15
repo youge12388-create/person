@@ -585,7 +585,6 @@ function MobilePage() {
                 </span>
               ))}
             </div>
-            <a className="mobile-tools-more" href="#contact">更多工具 <ChevronRight size={16} /></a>
           </article>
         </section>
 
