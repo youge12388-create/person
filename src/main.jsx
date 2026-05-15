@@ -135,7 +135,7 @@ const projectMetrics = {
 const experienceItems = [
   {
     time: '2026.01 - 至今',
-    title: '中科华府有限公司 · AI 产品专员',
+    title: '锦囊妙计企业管理有限公司 · AI 产品专员',
     summary: '负责 AI 课程 SOP、提示词编写、工具教学及企业培训落地。',
   },
   {
@@ -373,7 +373,7 @@ function DesktopPage() {
             <div className="timeline-item">
               <time>2026.01<br />2026.05</time>
               <div>
-                <h4>中科华府有限公司 · AI 产品专员</h4>
+                <h4>锦囊妙计企业管理有限公司 · AI 产品专员</h4>
                 <ul>
                   <li>负责 AI 教程 SOP、提示词模板、工具操作流程与培训资料的输出</li>
                   <li>参与 AI 短剧视频生产流程，优化内容策划与生成链路</li>
@@ -449,6 +449,7 @@ function DesktopPage() {
           <p>如果你对我的经历或项目感兴趣，欢迎随时联系我。</p>
         </div>
         <a className="contact-pill" href="mailto:you123886@163.com"><Mail size={20} />you123886@163.com</a>
+        <span className="contact-pill"><User size={20} />微信：python59</span>
         <a className="contact-main" href="mailto:you123886@163.com"><Send size={20} />联系我</a>
       </section>
 
@@ -608,6 +609,7 @@ function MobilePage() {
             <h3>期待与您合作，共同创造价值</h3>
             <div className="mobile-contact-meta">
               <a href="mailto:you123886@163.com"><Mail size={16} />you123886@163.com</a>
+              <span><User size={16} />微信：python59</span>
             </div>
           </div>
           <a className="mobile-contact-button" href="mailto:you123886@163.com">
