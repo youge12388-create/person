@@ -73,7 +73,7 @@ const stats = [
 ];
 
 const profileRows = [
-  [MapPin, '所在地', '广东省广州市'],
+  [MapPin, '所在地', '广东省深圳市'],
   [CalendarDays, '出生日期', '2002.11.25'],
   [Clock3, '婚姻状况', '未婚'],
   [Mail, '邮箱', 'you123886@163.com'],
