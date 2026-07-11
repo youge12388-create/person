@@ -1513,12 +1513,3 @@ footer {
     width: 100%;
   }
 }
-
-/* 修复 canhuo 客服挂件宿主定位失效：widget.js 把宿主样式误写进 Shadow DOM 内部，导致 position:fixed 不作用于宿主，挂件沉到文档末尾。此处补回宿主定位。 */
-.chat-widget-container {
-  position: fixed !important;
-  top: 50% !important;
-  right: 20px !important;
-  transform: translateY(-50%) !important;
-  z-index: 999999 !important;
-}
