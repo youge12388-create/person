@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react';
 import { ArrowRight, ArrowUpRight, Check, ChevronLeft, ChevronRight, Expand, FileText, Layers, Play, X } from 'lucide-react';
 import { caseDemos } from '../caseDemos.js';
+import { weeklySamples, weeklyStep } from '../weeklyDemo.js';
 import './CaseShowcase.css';
 
 export function CaseVisual({ project, onOpen }) {
@@ -31,7 +32,6 @@ export function CaseVisual({ project, onOpen }) {
       style={reduced ? undefined : { rotateX, rotateY, transformPerspective: 1000 }}
     >
       <img src={demo.image} alt={demo.imageAlt} loading="lazy" width="1536" height="1024" />
-      <span className="visual-caption">{demo.imageCaption}</span>
       <span className="visual-open"><Expand size={15} /> 预览交付</span>
     </motion.button>
   );
@@ -42,9 +42,13 @@ export function CaseExperience({ project }) {
   const [view, setView] = useState('workflow');
   const [step, setStep] = useState(0);
   const [sourceOpen, setSourceOpen] = useState(false);
+  const [sampleIndex, setSampleIndex] = useState(0);
+  const [sourceQuote, setSourceQuote] = useState('');
   const reduced = useReducedMotion();
-  const active = demo.steps[step];
-  const chooseStep = (next) => { setStep(next); setSourceOpen(false); };
+  const isWeekly = project.id === 'weekly-intelligence';
+  const sample = isWeekly ? weeklySamples[sampleIndex] : demo.sample;
+  const active = isWeekly ? weeklyStep(sample, step) : demo.steps[step];
+  const chooseStep = (next) => { setStep(next); setSourceOpen(false); setSourceQuote(''); };
   const instanceId = useId();
   const tabId = `demo-${project.id}-${instanceId}`;
   const workflowRef = useRef(null);
@@ -60,19 +64,20 @@ export function CaseExperience({ project }) {
   return (
     <section className={`case-experience theme-${demo.theme}`} aria-label={`${project.title}展示演示`}>
       <div className="demo-heading">
-        <div><span className="demo-kicker">交付演示</span><h3>{demo.previewTitle}</h3></div>
-        <span className="demo-label">示例数据 · 本地演示</span>
+        <h3>{demo.previewTitle}</h3>
       </div>
       <div className="demo-tabs" role="tablist" aria-label="案例展示方式" onKeyDown={handleTabKey}>
         <button ref={workflowRef} type="button" role="tab" id={`${tabId}-workflow`} aria-controls={`${tabId}-workflow-panel`} aria-selected={view === 'workflow'} tabIndex={view === 'workflow' ? 0 : -1} onClick={() => setView('workflow')}><Play size={13} /> 工作流演示</button>
-        <button ref={coverRef} type="button" role="tab" id={`${tabId}-cover`} aria-controls={`${tabId}-cover-panel`} aria-selected={view === 'cover'} tabIndex={view === 'cover' ? 0 : -1} onClick={() => setView('cover')}><Layers size={14} /> 界面示意</button>
+        <button ref={coverRef} type="button" role="tab" id={`${tabId}-cover`} aria-controls={`${tabId}-cover-panel`} aria-selected={view === 'cover'} tabIndex={view === 'cover' ? 0 : -1} onClick={() => setView('cover')}><Layers size={14} /> 界面展示</button>
       </div>
       <div role="tabpanel" id={`${tabId}-cover-panel`} aria-labelledby={`${tabId}-cover`} hidden={view !== 'cover'} tabIndex={0}>
         <figure className="demo-cover"><img src={demo.image} alt={demo.imageAlt} loading="lazy" width="1536" height="1024" /><figcaption>{demo.imageNote}</figcaption></figure>
       </div>
       <div role="tabpanel" id={`${tabId}-workflow-panel`} aria-labelledby={`${tabId}-workflow`} hidden={view !== 'workflow'} tabIndex={0}>
+        {isWeekly && <div className="demo-scenarios" role="group" aria-label="选择示例周报">{weeklySamples.map((item, index) => <button key={item.id} type="button" aria-pressed={sampleIndex === index} onClick={() => { setSampleIndex(index); chooseStep(0); }}>{item.label}</button>)}</div>}
+        <p className="demo-context">{isWeekly ? '选择一份示例周报，查看结构化结果与原文依据。' : '使用示例数据展示处理逻辑，不提交资料。'}</p>
         <div className="demo-workspace">
-          <div className="demo-window-bar"><span><i /><i /><i /></span><strong>{project.englishTitle}</strong><small>本地交互演示</small></div>
+          <div className="demo-window-bar"><span><i /><i /><i /></span><strong>{project.englishTitle}</strong></div>
           <div className="demo-workspace-body">
             <div className="demo-step-list" role="group" aria-label="选择处理步骤">
               {project.workflow.map((title, index) => (
@@ -83,21 +88,21 @@ export function CaseExperience({ project }) {
             </div>
             <div className="demo-stage">
               <div className="demo-stage-meta"><span>处理节点 {String(step + 1).padStart(2, '0')} / {String(project.workflow.length).padStart(2, '0')}</span><span><i /> 来源保留</span></div>
-              <motion.div key={step} className="demo-stage-content" initial={{ opacity: reduced ? 1 : .5, y: reduced ? 0 : 5 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduced ? 0 : .18 }}>
+              <motion.div key={`${sampleIndex}-${step}`} className="demo-stage-content" initial={{ opacity: reduced ? 1 : .5, y: reduced ? 0 : 5 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduced ? 0 : .18 }}>
                 <h4>{project.workflow[step]}</h4><p>{active.note}</p>
-                <div className="demo-data-list">
-                  {demo.sample.items.map((item) => <div className="demo-data-row" key={item.name}><FileText size={14} /><span>{item.name}<small>{item.team}</small></span><b>{item.status}</b></div>)}
-                </div>
-                <div className="demo-result"><Check size={15} /><p>{active.output}</p></div>
+                {isWeekly && step === 0 ? <blockquote className="demo-input"><span>输入 · {sample.sourceId}</span><p>{sample.source}</p></blockquote> : <div className="demo-data-list">
+                  {sample.items.map((item) => isWeekly ? <button className="demo-data-row" type="button" key={item.name} aria-label={`查看${item.name}的原文依据`} aria-controls={`${tabId}-source`} onClick={() => { setSourceOpen(true); setSourceQuote(item.quote); }}><FileText size={15} /><span>{item.name}<small>{item.team ?? '部门未提供'}</small></span><b>{item.status}</b><ArrowUpRight size={14} /></button> : <div className="demo-data-row" key={item.name}><FileText size={15} /><span>{item.name}<small>{item.team}</small></span><b>{item.status}</b></div>)}
+                </div>}
+                <div className="demo-result" aria-live="polite"><Check size={15} /><p>{active.output}</p></div>
                 <details className="demo-payload"><summary>查看此节点的数据结构</summary><pre>{JSON.stringify(active.payload, null, 2)}</pre></details>
               </motion.div>
-              <button className="demo-source-toggle" type="button" aria-expanded={sourceOpen} aria-controls={`${tabId}-source`} onClick={() => setSourceOpen((open) => !open)}><FileText size={13} /> {sourceOpen ? '收起示例来源' : '查看示例来源'} <ArrowUpRight size={13} /></button>
-              <div id={`${tabId}-source`} className="demo-source" hidden={!sourceOpen}>{demo.sample.source}</div>
+              <button className="demo-source-toggle" type="button" aria-expanded={sourceOpen} aria-controls={`${tabId}-source`} onClick={() => { setSourceOpen((open) => !open); setSourceQuote(''); }}><FileText size={15} /> {sourceOpen ? '收起原文依据' : '查看原文依据'} <ArrowUpRight size={13} /></button>
+              <div id={`${tabId}-source`} className="demo-source" hidden={!sourceOpen} role="region" aria-label="原文依据" aria-live="polite">{sourceQuote ? <><strong>对应原句</strong><mark>{sourceQuote}</mark><small>完整原文 · {sample.sourceId}</small></> : null}{sample.source}</div>
             </div>
           </div>
           <div className="demo-controls">
             <span>点击步骤，查看从输入到交付的处理过程。</span>
-            <div><button type="button" aria-label="上一步" disabled={step === 0} onClick={() => chooseStep(step - 1)}><ChevronLeft size={16} /></button><button type="button" onClick={() => chooseStep(step === demo.steps.length - 1 ? 0 : step + 1)}>{step === demo.steps.length - 1 ? '重新演示' : '下一步'}<ChevronRight size={15} /></button></div>
+            <div><button type="button" aria-label="上一步" disabled={step === 0} onClick={() => chooseStep(step - 1)}><ChevronLeft size={16} /></button><button type="button" onClick={() => chooseStep(step === project.workflow.length - 1 ? 0 : step + 1)}>{step === project.workflow.length - 1 ? '重新演示' : '下一步'}<ChevronRight size={15} /></button></div>
           </div>
         </div>
       </div>

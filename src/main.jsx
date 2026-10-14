@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion, MotionConfig, useReducedMotion, useScroll, useSpring } from 'motion/react';
 import {
@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   Check,
   Code2,
+  Copy,
   Download,
   ExternalLink,
   Mail,
@@ -18,16 +19,18 @@ import {
 import { contact, education, experience, projects } from './content.js';
 import { caseDemos } from './caseDemos.js';
 import { CaseDialog, CaseExperience, CaseVisual } from './components/CaseShowcase.jsx';
+import { ResumeDocument } from './components/ResumeDocument.jsx';
+import { ChatbotDemo } from './components/ChatbotDemo.jsx';
 import './styles.css';
 
 const portfolioPath = 'portfolio.html';
 const isProjectPage = window.location.pathname.endsWith(portfolioPath);
 
-function PrintButton({ compact = false }) {
+function PrintButton() {
   return (
-    <button className={`print-button${compact ? ' compact' : ''}`} onClick={() => window.print()}>
+    <button type="button" className="print-button" title="打开打印窗口，选择保存为 PDF" onClick={() => window.print()}>
       <Download size={15} aria-hidden="true" />
-      <span>打印 / 保存 PDF</span>
+      <span>保存简历 PDF</span>
     </button>
   );
 }
@@ -39,6 +42,7 @@ function Header({ projectPage = false }) {
         ['首页', 'index.html'],
         ['案例索引', '#case-index'],
         ['交付方法', 'index.html#approach'],
+        ['联系', '#contact'],
       ]
     : [
         ['项目案例', '#projects'],
@@ -82,7 +86,7 @@ function Header({ projectPage = false }) {
               {label}
             </a>
           ))}
-          <PrintButton compact />
+          <PrintButton />
         </nav>
       </div>
     </header>
@@ -90,37 +94,21 @@ function Header({ projectPage = false }) {
 }
 
 function HeroField() {
-  const [activeProject, setActiveProject] = useState(0);
-  const project = projects[activeProject];
-  const labels = ['企业协作', '研究 Agent', '双语服务'];
+  const project = projects[0];
 
   return (
     <div className="hero-visual">
       <div className="portrait-halo" aria-hidden="true" />
-      <div className="delivery-orbit" aria-hidden="true"><i /><i /><b /></div>
-      <div className="orbit-labels" aria-hidden="true"><span className="orbit-node node-data">数据接入</span><span className="orbit-node node-model">模型 × 规则</span><span className="orbit-node node-delivery">验证交付</span></div>
       <picture className="portrait-frame">
-        <img src="/image/portrait-cutout.png" alt="游丰奕，AI 应用工程师 / FDE 方向" />
+        <img src="./image/portrait-1200.webp" srcSet="./image/portrait-640.webp 640w, ./image/portrait-1200.webp 1200w" sizes="(max-width: 680px) 280px, (max-width: 1020px) 45vw, 620px" width="1200" height="900" fetchPriority="high" alt="游丰奕，AI 应用工程师 / FDE 方向" />
       </picture>
-      <div className="field-note" aria-live="polite">
-        <span className="field-note-label">SELECTED FIELD</span>
-        <div className="field-note-content" key={project.id}>
+      <div className="field-note">
+        <span className="field-note-label">从业务问题到系统交付</span>
+        <div className="field-note-content">
           <strong>{project.title}</strong>
-          <span>{project.scope}</span>
+          <span>独立负责需求、架构与核心开发</span>
           <a href={`${portfolioPath}#${project.id}`}>查看交付细节 <ArrowUpRight size={14} /></a>
         </div>
-      </div>
-      <div className="hero-case-picker" role="group" aria-label="切换首页项目焦点">
-        {projects.map((item, index) => (
-          <button
-            type="button"
-            key={item.id}
-            aria-pressed={activeProject === index}
-            onClick={() => setActiveProject(index)}
-          >
-            <span>{item.number}</span>{labels[index]}
-          </button>
-        ))}
       </div>
     </div>
   );
@@ -132,19 +120,17 @@ function Hero() {
       <div className="hero-inner page-width">
         <div className="hero-copy">
           <p className="hero-identity"><strong>游丰奕</strong><span>AI 应用工程师 · FDE 方向</span></p>
-          <h1><span className="hero-line"><span>AI 进入业务现场，</span></span><em className="hero-line"><span>交付为可用系统。</span></em></h1>
+          <h1><span className="hero-line"><span>把 AI 接入业务，</span></span><em className="hero-line"><span>把方案交付成系统。</span></em></h1>
           <p className="hero-intro">
-            从需求澄清、系统接入与数据建模，到模型约束、规则校验和交付验证，
-            把分散的业务问题整理成能运行、能追溯、能持续迭代的工作流。
+            围绕企业周报、选校研究与双语客服，把数据接入、模型判断和人工流程，连成可追溯、可验证的工作流。
           </p>
           <div className="hero-actions">
-            <a className="button-primary" href="#projects">查看项目 <ArrowDownRight size={17} /></a>
+            <a className="button-primary" href="#preview-weekly-intelligence">看代表项目 <ArrowDownRight size={17} /></a>
             <a className="button-text" href="#contact">联系我 <ArrowRight size={16} /></a>
           </div>
           <div className="hero-capabilities" aria-label="核心能力"><span>系统集成</span><span>Agent / RAG</span><span>验证与追溯</span></div>
         </div>
         <HeroField />
-        <a className="hero-scroll" href="#projects"><span>SCROLL TO CASES</span><ArrowDown size={14} /></a>
       </div>
     </section>
   );
@@ -172,22 +158,21 @@ function ProjectRow({ project, onPreview }) {
   );
 }
 
-function ProjectsSection({ projectPage = false }) {
+function ProjectsSection() {
   const [previewProject, setPreviewProject] = useState(null);
   return (
-    <section className={`projects-section page-width${projectPage ? ' project-index-section' : ''}`} id={projectPage ? 'case-index' : 'projects'}>
+    <section className="projects-section page-width" id="projects">
       <div className="section-heading">
         <div>
-          <h2>{projectPage ? '案例库' : '能力，落在具体项目里。'}</h2>
+          <h2>用具体交付，回答能力。</h2>
           <span className="section-index">SELECTED WORK / CASE STUDIES</span>
-          <p className="section-intro">{projectPage ? '从案例进入业务背景、系统设计和验证过程。' : '三个业务现场，呈现系统接入、Agent 设计与 AI 服务交付的具体实践。'}</p>
+          <p className="section-intro">先看我解决了什么，再看我是如何做出判断的。</p>
         </div>
-        {!projectPage && <a className="text-link" href={portfolioPath}>全部案例 <ArrowRight size={16} /></a>}
+        <a className="text-link" href={portfolioPath}>全部案例 <ArrowRight size={16} /></a>
       </div>
       <div className="project-list">
         {projects.map((project) => <ProjectRow project={project} key={project.id} onPreview={() => setPreviewProject(project)} />)}
       </div>
-      <p className="case-material-note">案例内容基于项目实践整理；配图与交互中的数据为演示素材。</p>
       {previewProject && <CaseDialog project={previewProject} onClose={() => setPreviewProject(null)} />}
     </section>
   );
@@ -258,6 +243,31 @@ function ExperienceSection() {
   );
 }
 
+function CopyButton({ value, label }) {
+  const [status, setStatus] = useState('idle');
+  const timer = useRef(null);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const copy = async () => {
+    clearTimeout(timer.current);
+    try {
+      await navigator.clipboard.writeText(value);
+      setStatus('copied');
+    } catch {
+      setStatus('error');
+    }
+    timer.current = setTimeout(() => setStatus('idle'), 3500);
+  };
+  return (
+    <span className="copy-action">
+      <button type="button" className="copy-button" onClick={copy} aria-label={`复制${label}`}>
+        {status === 'copied' ? <Check size={16} /> : <Copy size={16} />}
+        <span>{status === 'copied' ? '已复制' : '复制'}</span>
+      </button>
+      <span className={`copy-feedback${status === 'error' ? ' visible' : ''}`} role="status">{status === 'error' ? '未能复制，请选择上方文字手动复制。' : status === 'copied' ? `${label}已复制` : ''}</span>
+    </span>
+  );
+}
+
 function ContactSection() {
   return (
     <section className="contact-section" id="contact">
@@ -265,12 +275,13 @@ function ContactSection() {
         <div>
           <h2>一起把 AI 接入真实业务。</h2>
           <span className="section-index">GET IN TOUCH</span>
-          <p>欢迎交流 FDE、AI 应用落地与企业工作流设计。</p>
+          <p>欢迎交流 AI 应用工程、FDE 岗位与企业工作流项目。</p>
+          <PrintButton />
         </div>
         <div className="contact-actions">
-          <a className="contact-email" href={`mailto:${contact.email}`}><Mail size={18} />{contact.email}<ArrowUpRight size={15} /></a>
-          <a className="contact-social" href={contact.github} target="_blank" rel="noreferrer"><Code2 size={17} /> GitHub <ExternalLink size={14} /></a>
-          <span className="contact-social"><span className="wechat-mark">W</span> 微信：{contact.wechat}</span>
+          <div className="contact-row"><Mail size={19} /><div><span>邮箱</span><a className="contact-email" href={`mailto:${contact.email}`}>{contact.email}</a></div><CopyButton value={contact.email} label="邮箱" /></div>
+          <div className="contact-row"><span className="wechat-mark">W</span><div><span>微信</span><span className="contact-value">{contact.wechat}</span></div><CopyButton value={contact.wechat} label="微信" /></div>
+          <a className="contact-social" href={contact.github} target="_blank" rel="noreferrer"><Code2 size={19} /> 查看 GitHub 代码与项目 <ExternalLink size={15} /></a>
         </div>
       </div>
     </section>
@@ -304,46 +315,6 @@ function HomePage() {
   );
 }
 
-function ChatbotDemo() {
-  const [status, setStatus] = useState('idle');
-
-  const loadWidget = () => {
-    if (status === 'loading' || status === 'ready') return;
-    setStatus('loading');
-    const script = document.createElement('script');
-    script.src = 'https://chatbot.medicalchinaway.com/widget.js';
-    script.dataset.siteId = 'cmrydscuz0000oy9w3gusaijb';
-    script.dataset.siteKey = 'site-602562298fd298aa208d07643eebda45da3ddd9b07dc431b';
-    script.dataset.apiHost = 'https://chatbot.medicalchinaway.com';
-    script.dataset.resumeChatbot = 'true';
-    script.async = true;
-    script.onload = () => setStatus('ready');
-    script.onerror = () => {
-      setStatus('error');
-      script.remove();
-    };
-    document.body.appendChild(script);
-  };
-
-  const label = status === 'loading'
-    ? '正在加载客服演示…'
-    : status === 'ready'
-      ? '客服演示已加载，请使用对话入口'
-      : status === 'error'
-        ? '加载失败，点击重试'
-        : '体验在线客服';
-
-  return (
-    <div className="chatbot-demo">
-      <button type="button" onClick={loadWidget} disabled={status === 'loading' || status === 'ready'}>
-        {status === 'ready' ? <Check size={15} /> : <ArrowUpRight size={15} />}
-        {label}
-      </button>
-      <span className="visually-hidden" aria-live="polite">{label}</span>
-    </div>
-  );
-}
-
 function ProjectCase({ project }) {
   return (
     <article className="case-study" id={project.id}>
@@ -354,17 +325,29 @@ function ProjectCase({ project }) {
           <p className="case-english">{project.englishTitle}</p>
           <span className="case-category">{project.category}</span>
         </div>
-        <div className="case-scope"><span>PROJECT SCOPE</span><strong>{project.scope}</strong></div>
+        <div className="case-scope"><span>项目范围</span><strong>{project.scope}</strong></div>
       </header>
       <div className="case-body">
         <aside className="case-rail">
-          <span>MY ROLE</span>
+          <span>我的职责</span>
           <p>{project.role}</p>
-          <span>STACK</span>
+          <span>技术与工具</span>
           <div className="case-stack">{project.stack.map((tag) => <i key={tag}>{tag}</i>)}</div>
+          <nav className="case-chapters" aria-label={`${project.title}章节`}>
+            <a href={`#${project.id}-delivery`}>交付重点</a>
+            <a href={`#${project.id}-design`}>系统设计</a>
+            <a href={`#${project.id}-validation`}>验证与边界</a>
+            <a href="#contact">联系我</a>
+          </nav>
+          {project.repository && <a className="text-link repository-link" href={project.repository.url} target="_blank" rel="noreferrer">{project.repository.label}<ExternalLink size={14} /></a>}
           <a className="rail-link" href="#case-index">返回案例索引 <ArrowUpRight size={14} /></a>
         </aside>
         <div className="case-content">
+          <section className="case-delivery" id={`${project.id}-delivery`}>
+            <h3>交付重点</h3>
+            <p>{caseDemos[project.id].takeaway}</p>
+            <ul>{project.deliverables.map((item) => <li key={item}><Check size={16} /><span>{item}</span></li>)}</ul>
+          </section>
           <section className="case-narrative">
             <div>
               <h3>业务现场</h3>
@@ -379,7 +362,7 @@ function ProjectCase({ project }) {
           </section>
           <CaseExperience project={project} />
           {project.id === 'medical-concierge' && <ChatbotDemo />}
-          <section className="architecture-section">
+          <section className="architecture-section" id={`${project.id}-design`}>
             <div className="case-section-title"><h3>系统分层与职责</h3><span className="case-label">SYSTEM DESIGN</span></div>
             <div className="architecture-list">
               {project.architecture.map(([name, description], index) => (
@@ -403,7 +386,7 @@ function ProjectCase({ project }) {
               ))}
             </div>
           </section>
-          <section className="verification-section">
+          <section className="verification-section" id={`${project.id}-validation`}>
             <div className="case-section-title"><h3>验证方式与边界</h3><span className="case-label">VALIDATION & BOUNDARIES</span></div>
             <ul>
               {project.verification.map((item) => <li key={item}><Check size={15} /><span>{item}</span></li>)}
@@ -436,20 +419,19 @@ function PortfolioPage() {
         <section className="portfolio-hero" id="home">
           <div className="page-width portfolio-hero-inner">
             <a className="back-link" href="index.html"><ArrowLeft size={15} /> 返回首页</a>
-            <h1>让项目讲清楚，<br /><em>我如何解决问题。</em></h1>
+            <h1>每一次交付，<br /><em>都有判断的依据。</em></h1>
             <span className="section-index">CASE FILES / AI DELIVERY</span>
             <p>先看业务问题，再看方案判断、系统分层与验证边界。三个案例，呈现我如何把数据、模型、规则和人工流程连接成可用系统。</p>
             <a className="portfolio-hero-link" href="#case-index">浏览案例 <ArrowDown size={15} /></a>
           </div>
         </section>
-        <ProjectsSection projectPage />
+        <nav className="case-index page-width" id="case-index" aria-label="案例索引">
+          {projects.map((project) => <a key={project.id} href={`#${project.id}`}><span>{project.number}</span><div><strong>{project.title}</strong><small>{caseDemos[project.id].capability}</small></div><ArrowDownRight size={20} /></a>)}
+        </nav>
         <div className="page-width case-studies">
           {projects.map((project) => <ProjectCase project={project} key={project.id} />)}
         </div>
-        <section className="portfolio-end page-width">
-          <div><h2>从具体问题开始。</h2><span className="section-index">NEXT CONVERSATION</span></div>
-          <a className="button-primary" href={`mailto:${contact.email}`}>联系游丰奕 <ArrowUpRight size={16} /></a>
-        </section>
+        <ContactSection />
       </main>
       <Footer />
     </>
@@ -466,8 +448,8 @@ function ReadingProgress() {
 function App() {
   return (
     <div className={isProjectPage ? 'app project-app' : 'app'}>
-      <ReadingProgress />
-      {isProjectPage ? <PortfolioPage /> : <HomePage />}
+      <div className="screen-site"><ReadingProgress />{isProjectPage ? <PortfolioPage /> : <HomePage />}</div>
+      <ResumeDocument />
     </div>
   );
 }

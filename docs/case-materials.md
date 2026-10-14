@@ -4,7 +4,7 @@
 
 ## 替换图片
 
-把新图片放入 `public/image/cases/`，修改对应案例的 `image` 路径，也可以直接替换同名 WebP。建议 3:2 横图。更新 `imageAlt`、`imageCaption`、`imageNote`，说明截图中展示的内容与公开边界。配图只是展示素材，不能将其中的示例数值作为项目成果。
+把新图片放入 `public/image/cases/`，修改对应案例的 `image` 路径，也可以直接替换同名 WebP。建议 3:2 横图。更新 `imageAlt` 和 `imageNote`，描述展示内容。图片不叠加来源或生成方式角标；不能将配图中的示例数值作为项目成果。
 
 目前三张配图由内置 imagegen 工具生成，再压缩为 WebP：
 
@@ -19,11 +19,15 @@
 ## 替换演示内容
 
 - `capability`、`takeaway`、`evidence`：首页的能力定位、技术判断和项目依据。只填写可核验事实。
-- `sample.source`、`sample.items`：来源原文和展示记录。默认均为虚构示例。
+- `sample.source`、`sample.items`：高校与客服的来源原文和展示记录。默认均为虚构示例。周报的正常、缺失与冲突样例统一在 `src/weeklyDemo.js` 中维护。
 - `steps`：与 `src/content.js` 中 `workflow` 的顺序和数量一致。`note` 解释处理逻辑，`output` 说明该节点的产物，`payload` 展示对应数据结构。
-- `imageNote`：明确图片是概念图还是真实截图，与演示数据的说明分开。
+- `imageNote`：界面内容的简短描述，不作为图片角标。
 
 交互只在本地切换展示，不请求 AI、不提交资料，也不创建业务记录。真实截图请使用可公开并脱敏的素材。
+
+在线客服由用户主动开启，在 `chatbot-demo.html` 的独立 iframe 中运行。结束体验会卸载该 iframe；加载状态通过同源且校验消息来源窗口的 postMessage 传递。它使用已有外部客服服务，不属于本地示例数据处理。
+
+`src/content.js` 的 `deliverables` 用于案例交付重点和打印简历；`repository` 是已核对主题的相关公开代码入口，不表示研究流程和仓库功能完全相同。项目上线状态、时间与效果指标未经确认时不添加。
 
 ## 查看
 

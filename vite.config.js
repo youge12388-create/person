@@ -13,6 +13,7 @@ export default defineConfig({
       input: {
         main: path.resolve(projectRoot, 'index.html'),
         portfolio: path.resolve(projectRoot, 'portfolio.html'),
+        chatbotDemo: path.resolve(projectRoot, 'chatbot-demo.html'),
       },
     },
   },
