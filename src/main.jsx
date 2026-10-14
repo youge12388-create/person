@@ -21,6 +21,7 @@ import { caseDemos } from './caseDemos.js';
 import { CaseDialog, CaseExperience, CaseVisual } from './components/CaseShowcase.jsx';
 import { ResumeDocument } from './components/ResumeDocument.jsx';
 import { ChatbotDemo } from './components/ChatbotDemo.jsx';
+import PointerParticles from './components/PointerParticles.jsx';
 import './styles.css';
 
 const portfolioPath = 'portfolio.html';
@@ -448,7 +449,7 @@ function ReadingProgress() {
 function App() {
   return (
     <div className={isProjectPage ? 'app project-app' : 'app'}>
-      <div className="screen-site"><ReadingProgress />{isProjectPage ? <PortfolioPage /> : <HomePage />}</div>
+      <div className="screen-site"><ReadingProgress /><PointerParticles />{isProjectPage ? <PortfolioPage /> : <HomePage />}</div>
       <ResumeDocument />
     </div>
   );
