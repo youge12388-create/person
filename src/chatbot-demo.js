@@ -1,8 +1,8 @@
 const notify = (type) => window.parent.postMessage({ type }, window.location.origin);
 const script = document.createElement('script');
 script.src = 'https://chatbot.medicalchinaway.com/widget.js';
-script.dataset.siteId = 'cmrydscuz0000oy9w3gusaijb';
-script.dataset.siteKey = 'site-602562298fd298aa208d07643eebda45da3ddd9b07dc431b';
+script.dataset.siteId = 'cmscjd8cu003fzzdecnk93cpd';
+script.dataset.siteKey = 'site-df527234706ddf84977c1ba17a4ae28d56b558393f2e52eb';
 script.dataset.apiHost = 'https://chatbot.medicalchinaway.com';
 script.async = true;
 
