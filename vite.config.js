@@ -1,7 +1,20 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   base: './',
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(projectRoot, 'index.html'),
+        portfolio: path.resolve(projectRoot, 'portfolio.html'),
+        chatbotDemo: path.resolve(projectRoot, 'chatbot-demo.html'),
+      },
+    },
+  },
 });
