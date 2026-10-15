@@ -16,12 +16,14 @@ const vertex = /* glsl */ `
   varying vec3 vColor;
   varying float vOpacity;
   varying float vAngle;
+  varying float vPointSize;
 
   void main() {
     vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
     float perspective = ${FIELD_DEPTH.toFixed(1)} / -viewPosition.z;
     gl_Position = projectionMatrix * viewPosition;
     gl_PointSize = size * perspective * uPixelRatio;
+    vPointSize = gl_PointSize;
     vOpacity = opacity;
     vColor = color;
     vAngle = angle;
@@ -33,28 +35,60 @@ const fragment = /* glsl */ `
   varying vec3 vColor;
   varying float vOpacity;
   varying float vAngle;
+  varying float vPointSize;
 
-  float segmentDistance(vec2 point, vec2 start, vec2 end) {
-    vec2 relative = point - start;
-    vec2 direction = end - start;
-    float along = clamp(dot(relative, direction) / dot(direction, direction), 0.0, 1.0);
-    return length(relative - direction * along);
+  // A tapered prism carries two lit faces and a narrow ridge, rather than a flat stroke.
+  vec3 crystalFacet(vec2 point, vec2 start, vec2 end, float width, vec3 light, float aa) {
+    vec2 axis = normalize(end - start);
+    vec2 side = vec2(-axis.y, axis.x);
+    vec2 relative = point - (start + end) * 0.5;
+    vec2 local = vec2(dot(relative, axis), dot(relative, side));
+    float halfLength = length(end - start) * 0.5;
+    vec2 corner = vec2(halfLength, 0.0);
+    vec2 edge = vec2(-halfLength, width);
+    vec2 absolute = abs(local);
+    float along = clamp(dot(absolute - corner, edge) / dot(edge, edge), 0.0, 1.0);
+    float distance = length(absolute - corner - edge * along);
+    distance *= sign(absolute.x / halfLength + absolute.y / width - 1.0);
+    vec2 slope = axis * sign(local.x) * width / halfLength + side * sign(local.y) * 0.85;
+    vec3 normal = normalize(vec3(slope, 0.75));
+    float lighting = max(0.0, dot(normal, light));
+    float ridge = 1.0 - smoothstep(aa * 0.2, aa * 0.8, abs(local.y));
+    ridge *= 1.0 - smoothstep(0.65, 1.0, abs(local.x) / halfLength);
+    return vec3(distance, lighting, ridge);
   }
 
   void main() {
     vec2 point = (gl_PointCoord - 0.5) * 2.0;
-    float distance = 1.0;
-    for (int arm = 0; arm < 6; arm++) {
-      float angle = float(arm) * 1.04719755 + vAngle;
-      vec2 direction = vec2(cos(angle), sin(angle));
-      vec2 normal = vec2(-direction.y, direction.x);
-      distance = min(distance, segmentDistance(point, vec2(0.0), direction * 0.84));
-      distance = min(distance, segmentDistance(point, direction * 0.43, direction * 0.62 + normal * 0.19));
-      distance = min(distance, segmentDistance(point, direction * 0.43, direction * 0.62 - normal * 0.19));
+    float aa = 1.3 / vPointSize;
+    // Fold into one of six sectors; illumination stays fixed in screen space.
+    float sector = floor((atan(point.y, point.x) - vAngle + 0.52359878) / 1.04719755);
+    float angle = sector * 1.04719755 + vAngle;
+    vec2 direction = vec2(cos(angle), sin(angle));
+    vec2 normal = vec2(-direction.y, direction.x);
+    vec2 local = vec2(dot(point, direction), dot(point, normal));
+    vec3 light = normalize(vec3(dot(vec2(-0.6, -0.8), direction), dot(vec2(-0.6, -0.8), normal), 1.15));
+    float side = local.y < 0.0 ? -1.0 : 1.0;
+    vec3 facet = crystalFacet(local, vec2(0.015, 0.0), vec2(0.88, 0.0), 0.13, light, aa);
+    vec3 branch = crystalFacet(local, vec2(0.32, 0.0), vec2(0.66, 0.25 * side), 0.08, light, aa);
+    if (branch.x < facet.x) facet = branch;
+
+    float core = max(abs(local.y), abs(local.x) * 0.8660254 + abs(local.y) * 0.5) - 0.19;
+    if (core < facet.x) {
+      float lighting = max(0.0, dot(normalize(vec3(direction * 0.65, 1.0)), normalize(vec3(-0.6, -0.8, 1.15))));
+      facet = vec3(core, lighting, 0.0);
     }
-    float alpha = (1.0 - smoothstep(0.045, 0.09, distance)) * vOpacity;
+
+    float coverage = 1.0 - smoothstep(-aa, aa, facet.x);
+    float bevel = 1.0 - smoothstep(0.0, aa * 1.2, -facet.x);
+    vec3 ice = mix(vColor, vec3(0.58, 0.84, 1.0), 0.38);
+    vec3 material = mix(vColor * 0.58, ice, 0.25 + facet.y * 0.75);
+    material = mix(material, vColor * 0.65, bevel * 0.35);
+    float highlight = facet.z * 0.4 + bevel * pow(facet.y, 6.0) * 0.32;
+    material = mix(material, vec3(0.94, 0.98, 1.0), clamp(highlight, 0.0, 0.65));
+    float alpha = coverage * mix(0.82, 0.98, bevel) * vOpacity;
     if (alpha < 0.005) discard;
-    gl_FragColor = vec4(vColor, alpha);
+    gl_FragColor = vec4(material, alpha);
   }
 `;
 

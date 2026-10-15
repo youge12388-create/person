@@ -26,7 +26,7 @@ test('a pointer movement creates a larger snowflake along the input path', () =>
   const first = screen(field);
   assert(Math.abs(first.x - pointer.x) < 3);
   assert(Math.abs(first.y - pointer.y) < 3);
-  assert(field.sizes[0] >= 11 && field.sizes[0] <= 15);
+  assert(field.sizes[0] >= 22 && field.sizes[0] <= 28);
   assert(field.opacities[0] > 0);
 });
 

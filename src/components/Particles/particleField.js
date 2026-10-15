@@ -53,7 +53,7 @@ function emitSnowflakes(field, delta, pointer) {
     const driftX = Math.max(-60, Math.min(60, pointer.vx * 0.1));
     const driftY = 18 + field.random() * 12 + Math.max(-30, Math.min(30, pointer.vy * 0.08));
     field.velocities.set([driftX / scale, -driftY / scale, 0], offset);
-    field.sizes[index] = 11 + field.random() * 4;
+    field.sizes[index] = 22 + field.random() * 6;
     field.angles[index] = field.random() * Math.PI / 3;
     field.ages[index] = 0;
     field.lifetimes[index] = 1.05 + field.random() * 0.25;
