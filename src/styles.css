@@ -149,11 +149,6 @@ img, svg { display: block; }
 .experience-section { display: grid; grid-template-columns: .8fr 1.2fr; gap: 95px; padding-block: 112px 118px; }
 .experience-intro h2 { margin-top: 0; }
 .experience-intro > p { max-width: 315px; margin: 13px 0 34px; color: var(--muted); font-size: 14px; line-height: 1.8; }
-.education-block { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 17px 0; border-top: 1px solid var(--line); }
-.education-block > span { color: #526b78; font: 11px var(--mono); letter-spacing: .09em; }
-.education-block strong { margin-top: 4px; color: var(--ink); font-size: 15px; }
-.education-block small { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
-.education-block small i { width: 4px; height: 4px; border-radius: 50%; background: var(--coral); }
 .experience-list { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
 .experience-item { display: grid; grid-template-columns: 145px 1fr; gap: 22px; padding: 22px 8px; border-bottom: 1px solid var(--line); }
 .experience-item time { padding-top: 4px; color: #526b78; font: 11px/1.6 var(--mono); }
@@ -324,9 +319,6 @@ img, svg { display: block; }
   .hero-capabilities { font-size: 12px; margin-top: 20px; }
   .experience-section { grid-template-columns: 1fr; gap: 30px; padding-block: 72px; }
   .experience-intro > p { margin-bottom: 19px; font-size: 12px; }
-  .education-block { gap: 5px; padding: 15px 0; }
-  .education-block strong { font-size: 13px; }
-  .education-block small { font-size: 13px; }
   .experience-item { grid-template-columns: 90px 1fr; gap: 11px; padding: 18px 0; }
   .experience-item time { font-size: 12px; }
   .experience-item h3 { font-size: 14px; }
@@ -425,7 +417,7 @@ button { touch-action: manipulation; }
 .method-item:hover { transform: none; }
 .method-item::after { display: none; }
 .experience-intro > p { font-size: 16px; }
-.experience-item strong, .education-block small { font-size: 14px; }
+.experience-item strong { font-size: 14px; }
 .site-footer { font-size: 11px; }
 .case-narrative p, .architecture-row p, .decision-row p, .verification-section li { font-size: 15px; }
 .case-english { font-size: 13px; }
@@ -530,7 +522,7 @@ button { touch-action: manipulation; }
   .method-description, .method-deliverable small { font-size: 14px; }
   .method-deliverable p { font-size: 15px; }
   .experience-item h3 { font-size: 19px; }
-  .experience-item strong, .education-block small { font-size: 14px; }
+  .experience-item strong { font-size: 14px; }
   .experience-item { grid-template-columns: 1fr; gap: 8px; }
   .contact-inner { grid-template-columns: 1fr; padding: 28px 22px; gap: 28px; }
   .contact-row { gap: 9px; }
@@ -586,6 +578,8 @@ button { touch-action: manipulation; }
   .resume-document a { color: #111; }
   .resume-profile { margin: 12px 0 15px; font-size: 10pt; }
   .resume-document h2 { margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #b4c2cb; font-size: 12pt; line-height: 1.4; break-after: avoid; }
+  .resume-skills p { margin: 3px 0; }
+  .resume-skills strong { display: inline-block; min-width: 74px; }
   .resume-project { margin-top: 12px; break-inside: avoid; }
   .resume-project h3 { margin: 0 0 3px; font-size: 11pt; line-height: 1.5; }
   .resume-project p { margin: 3px 0; }
@@ -596,8 +590,4 @@ button { touch-action: manipulation; }
   .resume-experience p { margin: 3px 0; }
   .resume-experience > p:first-child { display: flex; justify-content: space-between; gap: 14px; }
   .resume-experience time { flex-shrink: 0; font-size: 9pt; }
-  .resume-education { break-inside: avoid; }
-  .resume-education p { margin: 5px 0; }
-  .resume-education p { display: flex; justify-content: space-between; gap: 15px; }
-  .resume-education time { font-size: 9pt; }
 }

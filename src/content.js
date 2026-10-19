@@ -5,10 +5,14 @@ export const projects = [
     category: 'ENTERPRISE SYSTEMS',
     title: '企业微信周报智能分析平台',
     englishTitle: 'Weekly Intelligence Platform',
-    summary: '把分散的员工周报转成可追溯的工作事项，并支持管理者按组织层级分析与提问。',
+    summary: '把约 40 人组织的周报管理从人工阅读升级为可下钻、可追溯的智能分析系统，独立负责需求、架构与核心开发。',
     scope: '约 40 人组织',
     role: '独立负责需求梳理、架构设计与核心功能开发',
-    deliverables: ['企业微信组织与周报的全量 / 增量同步链路', '员工、部门、原始周报与工作事项四类数据模型', '关联原文的事项分析、组织下钻与管理问答'],
+    deliverables: [
+      '打通企业微信组织与周报同步，设计员工、部门、原始周报、工作事项 4 类核心模型',
+      '用 Structured Output 将自然语言周报转成事项、状态、计划与置信度，明确无依据不补充、不确定进待确认',
+      '支持公司 → 部门 → 员工 → 原文下钻，让重复工作、长期未完成事项与潜在卡点可定位、可回查',
+    ],
     stack: ['企业微信 API', 'FastAPI', 'Next.js', 'PostgreSQL', 'Structured Output'],
     situation: '管理者需要逐人阅读周报，才能掌握团队在做什么、哪些事项反复出现，以及任务卡点在哪里。原始内容是自然语言，难以直接汇总，也容易在二次整理时失去上下文。',
     approach: '将原有阅读流程改造成一条有来源、有状态、可下钻的处理链路：先同步原始周报，再抽取工作事项，最后把结构化数据用于分析与问答。',
@@ -36,10 +40,14 @@ export const projects = [
     category: 'RESEARCH & AGENTS',
     title: '高校数据研究与国际学生选校 Agent',
     englishTitle: 'University Research & Matching Agent',
-    summary: '把高校招生资料研究整理成可核验的数据流程，再由规则与模型协同完成候选项目筛选。',
+    summary: '面向约 196 所高校的目标场景，把院校调研与选校从人工经验沉淀为可复用 Skill 和可核验的数据链路。',
     scope: '面向约 196 所高校的数据建设场景',
     role: '流程抽象、Research Skill 与选校 Agent 设计、端到端评估',
-    deliverables: ['官方来源优先的 Research Skill 与结构化字段', '确定性规则过滤与语义判断分离的匹配流程', '携带来源、年份与核验状态的候选数据'],
+    deliverables: [
+      '将找学校、查官网、定位简章、核对年份、提取字段、填写 Excel 封装为可复用 Research Skill',
+      '分离硬规则过滤与 LLM 语义判断，让 GPA、语言、预算等条件先筛，再由模型处理复杂背景',
+      '保留来源链接、数据年份与 Fresh / Needs Recheck / Unverified 状态，让每条结果都能复核',
+    ],
     repository: { url: 'https://github.com/youge12388-create/school', label: '相关代码 · 高校筛查' },
     stack: ['Web Research', 'Structured Output', 'Rule Engine', 'Excel', 'Agent Evaluation'],
     situation: '高校项目信息分散在官网、国际教育学院页面和不同年份的招生简章中。人工流程需要依次找学校、查官网、定位简章、核对年份、提取字段并填写 Excel，信息来源和时效都需要逐项检查。',
@@ -68,10 +76,14 @@ export const projects = [
     category: 'BILINGUAL AI SERVICE',
     title: '跨境医疗双语 AI 客服',
     englishTitle: 'Medical Travel Assistant',
-    summary: '面向欧美国际患者来华就医咨询，把知识检索、需求收集与人工接管连接成一条服务链路。',
+    summary: '面向欧美国际患者来华就医咨询，搭建从知识问答、需求收集到顾问接手的双语 AI 服务链路。',
     scope: '中英双语 · 约 170 条 FAQ',
     role: '咨询流程拆解、知识库整理、RAG 工作流与线索分流设计',
-    deliverables: ['覆盖服务流程的约 170 条中英双语 FAQ', '基于 Dify 的知识检索与受约束回答流程', '从咨询、需求收集到顾问接管的服务衔接'],
+    deliverables: [
+      '建设约 170 条中英双语 FAQ，覆盖医院匹配、费用、预约、签证等 9 类核心咨询场景',
+      '基于 Dify + RAG 设计受约束回答流程，高风险问题不交给模型下结论，明确转人工',
+      '结构化收集国家 / 地区、医疗需求与联系方式，把咨询转成顾问可跟进的业务线索',
+    ],
     repository: { url: 'https://github.com/youge12388-create/chatbot', label: '相关代码 · AI 客服' },
     stack: ['LLM', 'Dify', 'RAG', 'Prompt Engineering', 'Workflow Design'],
     situation: '患者咨询不只涉及医院和医生，还可能覆盖病历材料、费用、预约、签证、翻译陪诊、住宿与紧急情况。只回答 FAQ 无法收集后续服务所需信息，也不适合让模型直接作医疗判断。',
@@ -98,24 +110,18 @@ export const projects = [
 
 export const experience = [
   {
-    period: '2026.01 — 至今',
-    title: 'AI 产品专员',
-    company: '锦囊妙计企业管理有限公司',
-    details: '负责 AI 工作流程 SOP、提示词模板、工具操作流程与培训资料，支持企业 AI 工具落地。',
+    period: '2026.02 — 2026.10',
+    title: 'FDE 工程师',
+    company: '华太西就教育科技有限公司',
+    details: '主导企业 AI 应用从需求调研、方案设计到 Skill / Agent、Web 开发、测试和部署的端到端交付，推进周报分析、高校招生数据自动化与国际学生选校等项目。面向约 40 人组织，将人工 SOP 重构为“数据采集 → 规则校验 → LLM 处理 → Web 应用”的闭环，并把来源追溯、异常回退与人工复核写进工程边界，让模型结果真正可核验、可交付。',
   },
   {
-    period: '2025.01 — 2025.11',
-    title: '运营自动化支持实习生',
-    company: '深圳航世科技有限公司',
-    details: '搭建订单自动化与评论数据流程，支持运营数据采集、清洗和分析。',
+    period: '2025.02 — 2025.10',
+    title: 'AI 产品专员',
+    company: '锦囊妙计企业管理有限公司',
+    details: '参与企业 AI 工具体系建设，把教程、Prompt 模板、操作流程与培训材料沉淀为可复用资产，推动团队从“会用工具”走向“能配流程”。基于 OpenClaw、Codex、扣子完成客服、获客与内容生产助手配置，独立打通知识库、Prompt 与业务工作流。',
   },
 ];
-
-export const education = {
-  school: '广东机电职业技术学院',
-  major: '软件技术',
-  period: '2022.09 — 2025.06',
-};
 
 export const contact = {
   email: 'you123886@163.com',
