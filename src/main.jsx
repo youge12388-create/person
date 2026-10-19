@@ -16,7 +16,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
-import { contact, education, experience, projects } from './content.js';
+import { contact, experience, projects } from './content.js';
 import { caseDemos } from './caseDemos.js';
 import { CaseDialog, CaseExperience, CaseVisual } from './components/CaseShowcase.jsx';
 import { ResumeDocument } from './components/ResumeDocument.jsx';
@@ -101,7 +101,7 @@ function HeroField() {
     <div className="hero-visual">
       <div className="portrait-halo" aria-hidden="true" />
       <picture className="portrait-frame">
-        <img src="./image/portrait-1200.webp" srcSet="./image/portrait-640.webp 640w, ./image/portrait-1200.webp 1200w" sizes="(max-width: 680px) 280px, (max-width: 1020px) 45vw, 620px" width="1200" height="900" fetchPriority="high" alt="游丰奕，AI 应用工程师 / FDE 方向" />
+        <img src="./image/portrait-1200.webp" srcSet="./image/portrait-640.webp 640w, ./image/portrait-1200.webp 1200w" sizes="(max-width: 680px) 280px, (max-width: 1020px) 45vw, 620px" width="1200" height="900" fetchPriority="high" alt="游丰奕，FDE 工程师 / AI 应用交付" />
       </picture>
       <div className="field-note">
         <span className="field-note-label">从业务问题到系统交付</span>
@@ -120,10 +120,10 @@ function Hero() {
     <section className="hero-band" id="home">
       <div className="hero-inner page-width">
         <div className="hero-copy">
-          <p className="hero-identity"><strong>游丰奕</strong><span>AI 应用工程师 · FDE 方向</span></p>
+          <p className="hero-identity"><strong>游丰奕</strong><span>FDE 工程师 · AI 应用交付</span></p>
           <h1><span className="hero-line"><span>把 AI 接入业务，</span></span><em className="hero-line"><span>把方案交付成系统。</span></em></h1>
           <p className="hero-intro">
-            围绕企业周报、选校研究与双语客服，把数据接入、模型判断和人工流程，连成可追溯、可验证的工作流。
+            把 40 人组织的周报管理、196 所高校的选校研究和跨境医疗咨询，重构成可追溯、可验证的 AI 工作流。
           </p>
           <div className="hero-actions">
             <a className="button-primary" href="#preview-weekly-intelligence">看代表项目 <ArrowDownRight size={17} /></a>
@@ -219,14 +219,10 @@ function ExperienceSection() {
   return (
     <section className="experience-section page-width" id="experience">
       <div className="experience-intro">
-        <h2>经历与基础</h2>
-        <span className="section-index">BACKGROUND</span>
-        <p>软件技术背景，持续参与 AI 产品与业务流程自动化实践。</p>
-        <div className="education-block">
-          <span>EDUCATION</span>
-          <strong>{education.school}</strong>
-          <small>{education.major} <i /> {education.period}</small>
-        </div>
+        <h2>从业务问题到系统交付</h2>
+        <span className="section-index">EXPERIENCE</span>
+        <p>围绕 AI 应用落地，承担需求分析、数据建模、接口集成与系统验收。</p>
+        <p>核心打法是先把业务流程和数据边界拆清，再用模型、规则和工程实现把它重构成可运行、可追溯、可验收的系统。</p>
       </div>
       <div className="experience-list">
         {experience.map((item) => (
@@ -300,7 +296,7 @@ function Footer() {
 }
 
 function HomePage() {
-  useEffect(() => { document.title = '游丰奕 — AI 应用工程师 / FDE'; }, []);
+  useEffect(() => { document.title = '游丰奕 — FDE 工程师 / AI 应用交付'; }, []);
   return (
     <>
       <Header />
