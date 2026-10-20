@@ -8,6 +8,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
+  ChevronDown,
   Code2,
   Copy,
   Download,
@@ -26,6 +27,34 @@ import './styles.css';
 
 const portfolioPath = 'portfolio.html';
 const isProjectPage = window.location.pathname.endsWith(portfolioPath);
+
+function ResponsiveDetails({ label, className = '', children }) {
+  const [open, setOpen] = useState(() => window.matchMedia('(min-width: 681px)').matches);
+  const detailsRef = useRef(null);
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 681px)');
+    const revealAnchor = () => {
+      const target = document.getElementById(window.location.hash.slice(1));
+      if (target && detailsRef.current?.contains(target)) setOpen(true);
+    };
+    const adapt = () => { setOpen(media.matches); revealAnchor(); };
+    media.addEventListener('change', adapt);
+    window.addEventListener('hashchange', revealAnchor);
+    revealAnchor();
+    return () => {
+      media.removeEventListener('change', adapt);
+      window.removeEventListener('hashchange', revealAnchor);
+    };
+  }, []);
+
+  return (
+    <details ref={detailsRef} className={`responsive-details ${className}`} open={open} onToggle={(event) => setOpen(event.currentTarget.open)}>
+      <summary>{label}<ChevronDown size={16} aria-hidden="true" /></summary>
+      <div className="responsive-details-content">{children}</div>
+    </details>
+  );
+}
 
 function PrintButton() {
   return (
@@ -73,11 +102,12 @@ function Header({ projectPage = false }) {
           type="button"
           aria-label={menuOpen ? '关闭导航' : '打开导航'}
           aria-expanded={menuOpen}
+          aria-controls="primary-navigation"
           onClick={() => setMenuOpen((open) => !open)}
         >
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <nav className={`primary-nav${menuOpen ? ' open' : ''}`} aria-label="主导航">
+        <nav id="primary-navigation" className={`primary-nav${menuOpen ? ' open' : ''}`} aria-label="主导航">
           {nav.map(([label, href]) => (
             <a
               href={href}
@@ -101,7 +131,7 @@ function HeroField() {
     <div className="hero-visual">
       <div className="portrait-halo" aria-hidden="true" />
       <picture className="portrait-frame">
-        <img src="./image/portrait-1200.webp" srcSet="./image/portrait-640.webp 640w, ./image/portrait-1200.webp 1200w" sizes="(max-width: 680px) 280px, (max-width: 1020px) 45vw, 620px" width="1200" height="900" fetchPriority="high" alt="游丰奕，FDE 工程师 / AI 应用交付" />
+        <img src="./image/portrait-1200.webp" srcSet="./image/portrait-640.webp 640w, ./image/portrait-1200.webp 1200w" sizes="(max-width: 480px) 320px, (max-width: 680px) 62vw, (max-width: 1020px) 45vw, 620px" width="1200" height="900" fetchPriority="high" alt="游丰奕，FDE 工程师 / AI 应用交付" />
       </picture>
       <div className="field-note">
         <span className="field-note-label">从业务问题到系统交付</span>
@@ -120,7 +150,7 @@ function Hero() {
     <section className="hero-band" id="home">
       <div className="hero-inner page-width">
         <div className="hero-copy">
-          <p className="hero-identity"><strong>游丰奕</strong><span>FDE 工程师 · AI 应用交付</span></p>
+          <div className="hero-identity"><strong>游丰奕</strong><span className="hero-role">FDE 工程师 · AI 应用交付</span></div>
           <h1><span className="hero-line"><span>把 AI 接入业务，</span></span><em className="hero-line"><span>把方案交付成系统。</span></em></h1>
           <p className="hero-intro">
             把 40 人组织的周报管理、196 所高校的选校研究和跨境医疗咨询，重构成可追溯、可验证的 AI 工作流。
@@ -147,12 +177,14 @@ function ProjectRow({ project, onPreview }) {
         <div className="project-topline"><span className="project-file">CASE {project.number}</span><span>{demo.capability}</span></div>
         <h3>{project.title}</h3>
         <p className="project-summary">{project.summary}</p>
-        <p className="project-takeaway">{demo.takeaway}</p>
-        <ul className="project-evidence">{demo.evidence.map((item) => <li key={item}><Check size={13} />{item}</li>)}</ul>
-        <div className="tag-list">
-          {project.stack.slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}
-        </div>
-        <div className="project-role"><span>我的职责</span><p>{project.role}</p></div>
+        <ResponsiveDetails label="技术与交付细节" className="project-details">
+          <p className="project-takeaway">{demo.takeaway}</p>
+          <ul className="project-evidence">{demo.evidence.map((item) => <li key={item}><Check size={13} />{item}</li>)}</ul>
+          <div className="tag-list">
+            {project.stack.slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}
+          </div>
+          <div className="project-role"><span>我的职责</span><p>{project.role}</p></div>
+        </ResponsiveDetails>
         <div className="project-row-actions"><a className="text-link" href={`${portfolioPath}#${project.id}`}>阅读完整案例 <ArrowUpRight size={16} /></a><button type="button" onClick={onPreview}>交互预览 <ArrowRight size={14} /></button></div>
       </div>
     </article>
@@ -187,8 +219,13 @@ const methodItems = [
 ];
 
 function ApproachSection() {
-  const [activeMethod, setActiveMethod] = useState(0);
-  const method = methodItems[activeMethod];
+  const [activeMethod, setActiveMethod] = useState(() => window.matchMedia('(min-width: 681px)').matches ? 0 : -1);
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 681px)');
+    const adapt = () => setActiveMethod(media.matches ? 0 : -1);
+    media.addEventListener('change', adapt);
+    return () => media.removeEventListener('change', adapt);
+  }, []);
   return (
     <section className="approach-section" id="approach">
       <div className="page-width">
@@ -200,16 +237,18 @@ function ApproachSection() {
           <p>每个项目的场景不同，但交付都从明确问题与数据边界开始，再逐层把方案跑通。</p>
         </div>
         <div className="method-list">
-          {methodItems.map(([number, title, desc], index) => (
-            <button type="button" className="method-item" key={number} aria-pressed={activeMethod === index} aria-controls="method-deliverable" onClick={() => setActiveMethod(index)}>
+          {methodItems.map(([number, title, desc, deliverable, explanation, example], index) => (
+            <div className="method-step" key={number}>
+            <button type="button" className="method-item" aria-expanded={activeMethod === index} aria-controls={`method-deliverable-${number}`} onClick={() => setActiveMethod((active) => active === index && window.matchMedia('(max-width: 680px)').matches ? -1 : index)}>
               <span className="method-number">{number}</span>
               <span className="method-title">{title}</span>
               <span className="method-description">{desc}</span>
               <ArrowUpRight className="method-arrow" size={17} aria-hidden="true" />
             </button>
+            <div className="method-deliverable" id={`method-deliverable-${number}`} hidden={activeMethod !== index}><span>这一步的交付物</span><div><h3>{deliverable}</h3><p>{explanation}</p><small>{example}</small></div><span className="method-step-count">{number} / 04</span></div>
+            </div>
           ))}
         </div>
-        <div className="method-deliverable" id="method-deliverable" aria-live="polite"><span>这一步的交付物</span><div key={method[0]}><h3>{method[3]}</h3><p>{method[4]}</p><small>{method[5]}</small></div><span className="method-step-count">{method[0]} / 04</span></div>
       </div>
     </section>
   );
@@ -325,6 +364,7 @@ function ProjectCase({ project }) {
         <div className="case-scope"><span>项目范围</span><strong>{project.scope}</strong></div>
       </header>
       <div className="case-body">
+        <ResponsiveDetails label="项目职责与技术" className="case-rail-details">
         <aside className="case-rail">
           <span>我的职责</span>
           <p>{project.role}</p>
@@ -339,6 +379,7 @@ function ProjectCase({ project }) {
           {project.repository && <a className="text-link repository-link" href={project.repository.url} target="_blank" rel="noreferrer">{project.repository.label}<ExternalLink size={14} /></a>}
           <a className="rail-link" href="#case-index">返回案例索引 <ArrowUpRight size={14} /></a>
         </aside>
+        </ResponsiveDetails>
         <div className="case-content">
           <section className="case-delivery" id={`${project.id}-delivery`}>
             <h3>交付重点</h3>
@@ -359,6 +400,7 @@ function ProjectCase({ project }) {
           </section>
           <CaseExperience project={project} />
           {project.id === 'medical-concierge' && <ChatbotDemo />}
+          <ResponsiveDetails label="系统设计与验证" className="case-engineering-details">
           <section className="architecture-section" id={`${project.id}-design`}>
             <div className="case-section-title"><h3>系统分层与职责</h3><span className="case-label">SYSTEM DESIGN</span></div>
             <div className="architecture-list">
@@ -389,6 +431,7 @@ function ProjectCase({ project }) {
               {project.verification.map((item) => <li key={item}><Check size={15} /><span>{item}</span></li>)}
             </ul>
           </section>
+          </ResponsiveDetails>
         </div>
       </div>
     </article>

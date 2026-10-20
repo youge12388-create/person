@@ -79,6 +79,11 @@ export function CaseExperience({ project }) {
         <div className="demo-workspace">
           <div className="demo-window-bar"><span><i /><i /><i /></span><strong>{project.englishTitle}</strong></div>
           <div className="demo-workspace-body">
+            <label className="demo-step-select">处理步骤
+              <select value={step} onChange={(event) => chooseStep(Number(event.target.value))}>
+                {project.workflow.map((title, index) => <option key={title} value={index}>{index + 1} / {project.workflow.length} · {title}</option>)}
+              </select>
+            </label>
             <div className="demo-step-list" role="group" aria-label="选择处理步骤">
               {project.workflow.map((title, index) => (
                 <button type="button" key={title} aria-pressed={index === step} onClick={() => chooseStep(index)}>

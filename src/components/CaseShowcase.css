@@ -36,6 +36,7 @@
 .demo-window-bar i:last-child { background: #a8c9b6; }
 .demo-window-bar strong { min-width: 0; font: 11px var(--mono); color: var(--muted); }
 .demo-workspace-body { display: grid; grid-template-columns: 160px minmax(0, 1fr); min-height: 415px; }
+.demo-step-select { display: none; }
 .demo-step-list { display: flex; flex-direction: column; gap: 7px; padding: 20px 10px; border-right: 1px solid var(--line); background: #fafbf9; }
 .demo-step-list button { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 9px 8px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; cursor: pointer; text-align: left; transition: background .2s ease, color .2s ease; }
 .demo-step-list button > span { display: grid; place-items: center; flex: 0 0 17px; font: 11px var(--mono); }
@@ -143,4 +144,18 @@ button.demo-data-row:hover { background: #f4f6f5; }
   .demo-data-row b { max-width: 86px; font-size: 12px; }
   .demo-stage-content > p, .demo-result p, .demo-source { font-size: 15px; }
   .demo-stage { padding-inline: 13px; }
+  .case-visual { border: 0; border-radius: 12px; box-shadow: none; }
+  .case-visual img { aspect-ratio: 16 / 9; }
+  .visual-open { min-height: 44px; padding: 8px 12px; border: 0; box-shadow: none; }
+  .case-dialog { width: 100%; max-width: none; max-height: 94dvh; margin: auto 0 0; padding: 20px 20px max(20px, env(safe-area-inset-bottom)); border: 0; border-radius: 16px 16px 0 0; }
+  .demo-heading h3 { font-size: 17px; }
+  .demo-window-bar, .demo-step-list, .demo-controls > span { display: none; }
+  .demo-workspace { border-radius: 12px; box-shadow: none; }
+  .demo-step-select { display: grid; gap: 6px; min-width: 0; padding: 14px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  .demo-step-select select { width: 100%; min-width: 0; min-height: 48px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: white; font: 16px var(--sans); }
+  .demo-stage-meta { font-size: 12px; }
+  .demo-input { padding: 14px; }
+  .demo-tabs { width: 100%; }
+  .demo-tabs button { flex: 1; justify-content: center; padding-inline: 6px; }
+  .demo-controls { justify-content: flex-end; }
 }
