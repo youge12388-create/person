@@ -80,7 +80,7 @@ export function CaseExperience({ project }) {
           <div className="demo-window-bar"><span><i /><i /><i /></span><strong>{project.englishTitle}</strong></div>
           <div className="demo-workspace-body">
             <label className="demo-step-select">处理步骤
-              <select value={step} onChange={(event) => chooseStep(Number(event.target.value))}>
+              <select name={`workflow-step-${project.id}`} value={step} onChange={(event) => chooseStep(Number(event.target.value))}>
                 {project.workflow.map((title, index) => <option key={title} value={index}>{index + 1} / {project.workflow.length} · {title}</option>)}
               </select>
             </label>
