@@ -1,29 +1,30 @@
 import React, { useEffect, useRef } from 'react';
 
-// 不同层级标题的字号、晶格步长与鼠标斥力半径
+// 不同层级标题的字号、马赛克晶格步长、方砖尺寸与鼠标斥力半径
 const VARIANTS = {
-  hero: { maxSize: 62, minSize: 32, lineHeight: 1.28, step: 2.2, dot: 1.95, radius: 64 },
-  page: { maxSize: 54, minSize: 28, lineHeight: 1.3, step: 2.1, dot: 1.85, radius: 58 },
-  section: { maxSize: 38, minSize: 24, lineHeight: 1.34, step: 1.85, dot: 1.65, radius: 48 },
-  case: { maxSize: 32, minSize: 22, lineHeight: 1.36, step: 1.75, dot: 1.55, radius: 42 },
+  hero: { maxSize: 64, minSize: 34, lineHeight: 1.26, step: 2.35, dot: 2.08, radius: 72 },
+  page: { maxSize: 56, minSize: 30, lineHeight: 1.28, step: 2.25, dot: 1.99, radius: 64 },
+  section: { maxSize: 38, minSize: 24, lineHeight: 1.32, step: 1.95, dot: 1.73, radius: 52 },
+  case: { maxSize: 32, minSize: 22, lineHeight: 1.34, step: 1.85, dot: 1.64, radius: 46 },
 };
 
 const FONT = "'Inter', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif";
 
+const DEFAULT_PALETTE = ['#163fa8', '#1e56d8', '#2f76f6', '#38bdf8', '#48cae4', '#ffffff'];
+
 function readPalette(element) {
   const style = getComputedStyle(element);
-  const ink = style.getPropertyValue('--particle-ink').trim() || '#090d16';
-  const soft = style.getPropertyValue('--particle-soft').trim() || '#334155';
-  const accent = style.getPropertyValue('--particle-accent').trim() || '#1d4ed8';
-  return { ink, soft, accent };
+  return DEFAULT_PALETTE.map((fallback, index) => {
+    const val = style.getPropertyValue(`--particle-${index}`).trim();
+    return val || fallback;
+  });
 }
 
 /**
- * 磁流体文字粒子标题组件（Ferrofluid Particle Title）
- * - 复刻 silith.com/tech 的物理机制：鼠标滑过时对半径内粒子施加径向冲量推开并解锁（locked = false）
- * - 解锁粒子在弹簧拉力（0.1）、阻尼（0.8）与随机高频微跳动（Math.random() > 0.91）共同作用下，
- *   呈现类似磁流体沸腾跳动并回流吸附成字的质感
- * - 支持监听根节点 data-theme 切换，实时同步大厂主题粒子配色
+ * 蓝白晶格磁流体文字粒子标题组件（Blue-White Mosaic Ferrofluid Title）
+ * - 参照 TECHNOLOGY 晶格配色规律：深钴蓝 / 皇家蓝轮廓锚定 + 亮蔚蓝过渡 + 电光青蓝簇 + 纯白方砖高亮
+ * - 使用高对比方形马赛克砖块并保留清晰晶格间隙，兼顾科技颗粒质感与白底高可读性
+ * - 鼠标滑过时施加径向斥力并激活微粒提亮，回流锁定时恢复原有晶格色阶
  */
 export function ParticleTitle({ as: Tag = 'h2', lines, text = '', variant = 'section', className = '' }) {
   const hostRef = useRef(null);
@@ -51,7 +52,7 @@ export function ParticleTitle({ as: Tag = 'h2', lines, text = '', variant = 'sec
 
     const fitFont = (measureCtx, available) => {
       let size = spec.maxSize;
-      if (available < 640) size = Math.min(size, Math.max(spec.minSize, available * 0.085));
+      if (available < 640) size = Math.min(size, Math.max(spec.minSize, available * 0.088));
       while (size > spec.minSize) {
         measureCtx.font = `800 ${size}px ${FONT}`;
         const widest = Math.max(...textLines.map((line) => measureCtx.measureText(line).width));
@@ -66,20 +67,28 @@ export function ParticleTitle({ as: Tag = 'h2', lines, text = '', variant = 'sec
       ctx.clearRect(0, 0, width, height);
       for (let i = 0; i < particles.length; i += 1) {
         const p = particles[i];
-        if (p.locked) {
-          ctx.fillStyle = palette.ink;
-          ctx.fillRect(p.tx, p.ty, dot, dot);
-        } else {
-          ctx.fillStyle = p.isAccent ? palette.accent : p.isSoft ? palette.soft : palette.ink;
-          const activeDot = p.isAccent ? dot * 1.15 : dot;
-          ctx.fillRect(p.x, p.y, activeDot, activeDot);
-        }
-      }
-    };
+        const px = p.locked ? p.tx : p.x;
+        const py = p.locked ? p.ty : p.y;
 
-    const refreshPalette = () => {
-      palette = readPalette(host);
-      draw();
+        let displayTone = p.tone;
+        let sizeNow = dot;
+
+        if (!p.locked) {
+          const speed = Math.hypot(p.vx, p.vy);
+          if (speed > 4.5) {
+            displayTone = 5;
+            sizeNow = dot * 1.12;
+          } else if (speed > 1.8) {
+            displayTone = Math.min(5, Math.max(4, p.tone + 1));
+            sizeNow = dot * 1.06;
+          } else {
+            displayTone = Math.min(5, Math.max(3, p.tone));
+          }
+        }
+
+        ctx.fillStyle = palette[displayTone] ?? palette[1];
+        ctx.fillRect(px, py, sizeNow, sizeNow);
+      }
     };
 
     const build = () => {
@@ -88,8 +97,8 @@ export function ParticleTitle({ as: Tag = 'h2', lines, text = '', variant = 'sec
       const size = fitFont(measure, width - 4);
       const ratio = size / spec.maxSize;
       const lineBox = Math.round(size * spec.lineHeight);
-      const step = Math.max(1.5, spec.step * Math.max(0.84, ratio));
-      dot = Math.max(1.35, spec.dot * Math.max(0.84, ratio));
+      const step = Math.max(1.55, spec.step * Math.max(0.84, ratio));
+      dot = Math.max(1.38, step * 0.885);
       radius = spec.radius * Math.max(0.75, ratio);
       height = lineBox * textLines.length + 8;
       scale = Math.max(window.devicePixelRatio || 1, 2);
@@ -111,15 +120,49 @@ export function ParticleTitle({ as: Tag = 'h2', lines, text = '', variant = 'sec
       textLines.forEach((line, index) => sctx.fillText(line, 1, 4 + lineBox * (index + 0.5)));
       const data = sctx.getImageData(0, 0, sample.width, sample.height).data;
 
+      const sampleAlpha = (px, py) => {
+        const sx = Math.round(px * sampleScale);
+        const sy = Math.round(py * sampleScale);
+        if (sx < 0 || sx >= sample.width || sy < 0 || sy >= sample.height) return 0;
+        return data[(sy * sample.width + sx) * 4 + 3];
+      };
+
       palette = readPalette(host);
       const next = [];
       for (let y = 0; y < height; y += step) {
         for (let x = 0; x < width; x += step) {
-          const index = (Math.round(y * sampleScale) * sample.width + Math.round(x * sampleScale)) * 4 + 3;
-          if (data[index] < 115) continue;
-          const roll = Math.random();
-          const isAccent = roll > 0.78;
-          const isSoft = !isAccent && roll > 0.42;
+          if (sampleAlpha(x, y) < 115) continue;
+
+          // 检测是否为笔画边缘像素，边缘锁定在深/亮蓝以保持锐利外轮廓
+          const isEdge =
+            sampleAlpha(x - step, y) < 115 ||
+            sampleAlpha(x + step, y) < 115 ||
+            sampleAlpha(x, y - step) < 115 ||
+            sampleAlpha(x, y + step) < 115;
+
+          let tone;
+          if (isEdge) {
+            const edgeRoll = Math.random();
+            tone = edgeRoll < 0.42 ? 0 : edgeRoll < 0.8 ? 1 : 2;
+          } else {
+            // 笔画内部结合空间簇波纹生成「蓝基 + 青蓝过渡 + 纯白点缀」的有机分布
+            const cluster = Math.sin(x * 0.22 + y * 0.17) * Math.cos(x * 0.14 - y * 0.21);
+            const score = Math.random() + cluster * 0.26;
+            if (score > 0.945) {
+              tone = 5; // 纯白高光方砖 (~13%)
+            } else if (score > 0.805) {
+              tone = 4; // 电光青蓝 (#48cae4, ~14%)
+            } else if (score > 0.645) {
+              tone = 3; // 天青蓝 (#38bdf8, ~16%)
+            } else if (score > 0.42) {
+              tone = 2; // 亮蔚蓝 (#2f76f6, ~22%)
+            } else if (score > 0.14) {
+              tone = 1; // 皇家蓝 (#1e56d8)
+            } else {
+              tone = 0; // 深钴蓝 (#163fa8)
+            }
+          }
+
           next.push({
             tx: x,
             ty: y,
@@ -128,8 +171,7 @@ export function ParticleTitle({ as: Tag = 'h2', lines, text = '', variant = 'sec
             vx: 0,
             vy: 0,
             locked: true,
-            isAccent,
-            isSoft,
+            tone,
           });
         }
       }
@@ -150,21 +192,21 @@ export function ParticleTitle({ as: Tag = 'h2', lines, text = '', variant = 'sec
           const dist = Math.hypot(dx, dy);
           if (dist < radius && dist > 0.0001) {
             const factor = (radius - dist) / radius;
-            p.vx += (dx / dist) * factor * 28;
-            p.vy += (dy / dist) * factor * 28;
+            p.vx += (dx / dist) * factor * 24;
+            p.vy += (dy / dist) * factor * 24;
             p.locked = false;
           }
         }
 
         if (!p.locked) {
-          p.vx += (p.tx - p.x) * 0.1;
-          p.vy += (p.ty - p.y) * 0.1;
-          if (Math.random() > 0.91) {
-            p.x += (Math.random() - 0.5) * 14;
-            p.y += (Math.random() - 0.5) * 14;
+          p.vx += (p.tx - p.x) * 0.11;
+          p.vy += (p.ty - p.y) * 0.11;
+          if (Math.random() > 0.92) {
+            p.x += (Math.random() - 0.5) * 10;
+            p.y += (Math.random() - 0.5) * 10;
           }
-          p.vx *= 0.8;
-          p.vy *= 0.8;
+          p.vx *= 0.81;
+          p.vy *= 0.81;
           p.x += p.vx;
           p.y += p.vy;
 
@@ -215,14 +257,6 @@ export function ParticleTitle({ as: Tag = 'h2', lines, text = '', variant = 'sec
       build();
     });
 
-    const themeObserver = new MutationObserver(() => {
-      requestAnimationFrame(refreshPalette);
-    });
-    themeObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    });
-
     build();
     canvas.addEventListener('pointermove', onMove, { passive: true });
     canvas.addEventListener('pointerdown', onMove, { passive: true });
@@ -233,7 +267,6 @@ export function ParticleTitle({ as: Tag = 'h2', lines, text = '', variant = 'sec
     return () => {
       cancelAnimationFrame(frame);
       resize.disconnect();
-      themeObserver.disconnect();
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerdown', onMove);
       canvas.removeEventListener('pointerleave', onLeave);

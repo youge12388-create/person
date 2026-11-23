@@ -1,8 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion, MotionConfig, useReducedMotion, useScroll, useSpring } from 'motion/react';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronDown, Copy, Download, ExternalLink, Menu, Palette, X } from 'lucide-react';
-import { contact, experience, projects } from './content.js';
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  ChevronDown,
+  Copy,
+  Download,
+  ExternalLink,
+  Layers,
+  Menu,
+  Play,
+  X,
+} from 'lucide-react';
+import { archiveCases, caseCategories, contact, experience, projects } from './content.js';
 import { caseDemos } from './caseDemos.js';
 import { CaseDialog, CaseExperience, CaseVisual } from './components/CaseShowcase.jsx';
 import { ResumeDocument } from './components/ResumeDocument.jsx';
@@ -12,33 +26,6 @@ import './styles.css';
 
 const portfolioPath = 'portfolio.html';
 const isProjectPage = window.location.pathname.endsWith(portfolioPath);
-
-const THEMES = [
-  { id: 'palantir', label: 'Palantir 钴蓝', hint: '冷白 · 石墨黑 · 工程钴蓝' },
-  { id: 'vercel', label: 'Vercel 极简黑白', hint: '纯白 · 曜石黑 · 精密锌灰' },
-  { id: 'linear', label: 'Linear 深空碳黑', hint: '碳黑 · 钨钢灰 · 钛白' },
-];
-
-function useBenchmarkTheme() {
-  const [theme, setTheme] = useState(() => {
-    try {
-      return localStorage.getItem('fde-benchmark-theme') || 'palantir';
-    } catch {
-      return 'palantir';
-    }
-  });
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    try {
-      localStorage.setItem('fde-benchmark-theme', theme);
-    } catch {
-      /* ignore */
-    }
-  }, [theme]);
-
-  return [theme, setTheme];
-}
 
 function ResponsiveDetails({ label, className = '', children }) {
   const [open, setOpen] = useState(() => window.matchMedia('(min-width: 681px)').matches);
@@ -71,37 +58,17 @@ function ResponsiveDetails({ label, className = '', children }) {
 function PrintButton({ className = 'print-button' }) {
   return (
     <button type="button" className={className} title="打开打印窗口，选择保存为 PDF" onClick={() => window.print()}>
-      <Download size={15} aria-hidden="true" />
-      <span>保存简历 PDF</span>
+      <Download size={14} aria-hidden="true" />
+      <span>导出简历 PDF</span>
     </button>
   );
 }
 
-function ThemeSwitcher({ theme, onChange }) {
-  return (
-    <div className="theme-switcher" role="group" aria-label="对标大厂配色切换">
-      <span className="theme-switcher-label"><Palette size={13} aria-hidden="true" /> 配色</span>
-      {THEMES.map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          className={`theme-chip${theme === item.id ? ' active' : ''}`}
-          title={item.hint}
-          aria-pressed={theme === item.id}
-          onClick={() => onChange(item.id)}
-        >
-          {item.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function Header({ projectPage = false, theme, onThemeChange }) {
+function Header({ projectPage = false }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const nav = projectPage
-    ? [['首页', 'index.html'], ['案例目录', '#case-index'], ['联系', '#contact']]
-    : [['项目案例', '#projects'], ['工作方法', '#approach'], ['经历', '#experience'], ['联系', '#contact']];
+    ? [['首页', 'index.html'], ['旗舰案例', '#flagship-cases'], ['更多案例集', '#archive-cases'], ['联系', '#contact']]
+    : [['核心案例', '#projects'], ['案例集', portfolioPath], ['工作方法', '#approach'], ['履历背书', '#experience'], ['联系', '#contact']];
 
   useEffect(() => {
     const closeOnEscape = (event) => { if (event.key === 'Escape') setMenuOpen(false); };
@@ -113,15 +80,26 @@ function Header({ projectPage = false, theme, onThemeChange }) {
     <header className="site-header">
       <div className="header-inner">
         <a className="brand" href="index.html" aria-label="游丰奕，返回首页">
+          <span className="brand-mark" aria-hidden="true">游</span>
           <span className="brand-name">游丰奕</span>
           <span className="brand-role">FDE 工程师 · AI 应用交付</span>
         </a>
-        <button className="menu-toggle" type="button" aria-label={menuOpen ? '关闭导航' : '打开导航'} aria-expanded={menuOpen} aria-controls="primary-navigation" onClick={() => setMenuOpen((open) => !open)}>
+        <button
+          className="menu-toggle"
+          type="button"
+          aria-label={menuOpen ? '关闭导航' : '打开导航'}
+          aria-expanded={menuOpen}
+          aria-controls="primary-navigation"
+          onClick={() => setMenuOpen((open) => !open)}
+        >
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
         <nav id="primary-navigation" className={`primary-nav${menuOpen ? ' open' : ''}`} aria-label="主导航">
-          {nav.map(([label, href]) => <a href={href} key={label} onClick={() => setMenuOpen(false)}>{label}</a>)}
-          <ThemeSwitcher theme={theme} onChange={onThemeChange} />
+          {nav.map(([label, href]) => (
+            <a href={href} key={label} onClick={() => setMenuOpen(false)}>
+              {label}
+            </a>
+          ))}
           <PrintButton />
         </nav>
       </div>
@@ -130,39 +108,76 @@ function Header({ projectPage = false, theme, onThemeChange }) {
 }
 
 const heroFacts = [
-  ['约 40 人', '企业微信周报分析', '组织的周报从逐份人工阅读变为可下钻、可回查原文的智能分析系统'],
-  ['约 196 所', '高校研究与选校 Agent', '把院校调研与选校从人工经验沉淀为可复用 Skill 与规则/语义双层链路'],
-  ['约 170 条', '跨境医疗双语客服', '中英双语 FAQ，基于 Dify + RAG 连接受约束问答、线索收集与人工接管'],
+  {
+    id: 'weekly-intelligence',
+    value: '约 40 人',
+    title: '企业微信周报分析',
+    desc: '把逐份人工阅读重构为可下钻、可回查原文的智能分析链路',
+  },
+  {
+    id: 'university-agent',
+    value: '约 196 所',
+    title: '高校调研与选校 Agent',
+    desc: '把人工调研封装为可复用 Skill，拆出硬规则与语义双层筛选',
+  },
+  {
+    id: 'medical-concierge',
+    value: '约 170 条',
+    title: '跨境医疗双语客服',
+    desc: '基于 Dify + RAG 实现受约束双语问答、留资与人工安全接管',
+  },
 ];
+
+const workflowBefore = {
+  'weekly-intelligence': '管理者逐人翻阅自然语言周报，难以跨部门汇总，卡点与重复工作只能靠人工记忆。',
+  'university-agent': '人工逐校检索官网与历年简章、手动核对条件并填表，耗时且容易混入过期或第三方信息。',
+  'medical-concierge': '人工客服跨时区重复回复基础咨询，高风险医疗问题与有效业务线索混杂难分流。',
+};
 
 function Hero() {
   return (
     <section className="hero" id="home">
       <div className="hero-inner page-width">
         <div className="hero-copy">
-          <p className="eyebrow">游丰奕 · FDE 工程师 / AI 应用交付</p>
-          <ParticleTitle as="h1" variant="hero" lines={['把 AI 接入业务，', '把方案交付成系统。']} />
+          <div className="hero-badge">
+            <span className="hero-badge-dot" aria-hidden="true" />
+            <span>游丰奕 · FDE 工程师 / AI 应用交付</span>
+          </div>
+          <ParticleTitle as="h1" variant="hero" lines={['把 AI 接入业务', '把方案交付成系统']} />
           <p className="hero-intro">
-            我从业务现场拆问题，把数据、模型、规则和已有系统接成一条可运行的工作流，并让每个结果都能回到来源、交给人复核。
+            面向真实业务现场拆解低效流程，把数据、模型、规则与现有系统接成一条可运行的 AI 工作流，让每一个业务结果都可追溯、可复核、可落地。
           </p>
           <div className="hero-actions">
-            <a className="button-primary" href="#projects">看代表项目 <ArrowDown size={16} /></a>
-            <a className="button-link" href="#contact">联系我 <ArrowRight size={16} /></a>
+            <a className="button-primary" href="#projects">查看核心案例 <ArrowDown size={15} /></a>
+            <a className="button-secondary" href="#contact">联系交流 <ArrowRight size={15} /></a>
           </div>
         </div>
         <figure className="hero-portrait">
-          <img src="./image/portrait-1200.webp" srcSet="./image/portrait-640.webp 640w, ./image/portrait-1200.webp 1200w" sizes="(max-width: 680px) 90vw, 620px" width="1200" height="900" fetchPriority="high" alt="游丰奕" />
+          <img
+            src="./image/portrait-1200.webp"
+            srcSet="./image/portrait-640.webp 640w, ./image/portrait-1200.webp 1200w"
+            sizes="(max-width: 680px) 90vw, 520px"
+            width="1200"
+            height="900"
+            fetchPriority="high"
+            alt="游丰奕"
+          />
         </figure>
       </div>
       <div className="hero-facts-band">
-        <ul className="hero-facts page-width" aria-label="项目规模">
-          {heroFacts.map(([value, title, desc]) => (
-            <li key={value}>
-              <div className="fact-top">
-                <strong>{value}</strong>
-                <em>{title}</em>
-              </div>
-              <span>{desc}</span>
+        <ul className="hero-facts page-width" aria-label="核心交付背书">
+          {heroFacts.map((fact) => (
+            <li key={fact.id}>
+              <a className="fact-card-link" href={`#preview-${fact.id}`}>
+                <div className="fact-top">
+                  <div className="fact-top-left">
+                    <strong>{fact.value}</strong>
+                    <em>{fact.title}</em>
+                  </div>
+                  <ArrowUpRight size={16} className="fact-arrow" aria-hidden="true" />
+                </div>
+                <span>{fact.desc}</span>
+              </a>
             </li>
           ))}
         </ul>
@@ -174,45 +189,108 @@ function Hero() {
 function ProjectRow({ project, onPreview }) {
   const demo = caseDemos[project.id];
   const reduced = useReducedMotion();
+  const [mode, setMode] = useState('overview');
+
   return (
     <motion.article
       className="case-row"
       id={`preview-${project.id}`}
-      initial={reduced ? false : { opacity: 0, y: 24 }}
+      initial={reduced ? false : { opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       <header className="case-row-head">
-        <span className="case-row-number">{project.number}</span>
-        <div>
-          <p className="case-row-meta">{demo.capability}<span aria-hidden="true">·</span>{project.scope}</p>
-          <h3>{project.title}</h3>
-          <p className="case-row-summary">{project.summary}</p>
+        <div className="case-row-head-main">
+          <span className="case-row-number">{project.number}</span>
+          <div>
+            <p className="case-row-meta">
+              {demo.capability}
+              <span aria-hidden="true">·</span>
+              {project.scope}
+            </p>
+            <h3>{project.title}</h3>
+            <p className="case-row-summary">{project.summary}</p>
+          </div>
+        </div>
+        <div className="case-view-tabs" role="tablist" aria-label={`${project.title}展示切换`}>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === 'overview'}
+            className={`case-view-tab${mode === 'overview' ? ' active' : ''}`}
+            onClick={() => setMode('overview')}
+          >
+            <Layers size={14} /> 交付概览
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === 'workflow'}
+            className={`case-view-tab${mode === 'workflow' ? ' active' : ''}`}
+            onClick={() => setMode('workflow')}
+          >
+            <Play size={13} /> 交互工作流
+          </button>
         </div>
       </header>
-      <div className="case-row-grid">
-        <div className="case-row-visual"><CaseVisual project={project} onOpen={onPreview} /></div>
-        <div className="case-row-detail">
-          <p className="case-row-takeaway">{demo.takeaway}</p>
-          <ul className="case-row-deliverables">
-            {project.deliverables.map((item) => <li key={item}>{item}</li>)}
-          </ul>
-          <dl className="case-row-facts">
-            <div><dt>我的职责</dt><dd>{project.role}</dd></div>
-            <div>
-              <dt>技术栈</dt>
-              <dd className="stack-chips">
-                {project.stack.map((tag) => <span key={tag}>{tag}</span>)}
-              </dd>
-            </div>
-          </dl>
-          <div className="case-row-actions">
-            <a className="button-primary" href={`${portfolioPath}#${project.id}`}>阅读完整案例 <ArrowUpRight size={16} /></a>
-            <button type="button" className="button-link" onClick={onPreview}>交互预览 <ArrowRight size={15} /></button>
+
+      {/* AI 流程重构对比：一眼看清业务是怎么被优化的 */}
+      <div className="workflow-compare" aria-label="AI 流程重构对比">
+        <div className="workflow-compare-col before">
+          <span className="workflow-compare-label">Before · 原有人工痛点</span>
+          <p className="workflow-compare-text">{workflowBefore[project.id]}</p>
+        </div>
+        <div className="workflow-compare-arrow" aria-hidden="true">
+          <ArrowRight size={18} />
+        </div>
+        <div className="workflow-compare-col after">
+          <span className="workflow-compare-label">After · AI 流程重构</span>
+          <div className="workflow-steps-inline">
+            {project.workflow.map((stepName, index) => (
+              <React.Fragment key={stepName}>
+                <span className="workflow-step-chip">{stepName}</span>
+                {index < project.workflow.length - 1 && (
+                  <span className="workflow-step-sep" aria-hidden="true">→</span>
+                )}
+              </React.Fragment>
+            ))}
           </div>
         </div>
       </div>
+
+      {mode === 'workflow' ? (
+        <CaseExperience project={project} />
+      ) : (
+        <div className="case-row-grid">
+          <div className="case-row-visual">
+            <CaseVisual project={project} onOpen={onPreview} />
+          </div>
+          <div className="case-row-detail">
+            <p className="case-row-takeaway">{demo.takeaway}</p>
+            <ul className="case-row-deliverables">
+              {project.deliverables.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+            <dl className="case-row-facts">
+              <div><dt>我的职责</dt><dd>{project.role}</dd></div>
+              <div>
+                <dt>技术栈</dt>
+                <dd className="stack-chips">
+                  {project.stack.map((tag) => <span key={tag}>{tag}</span>)}
+                </dd>
+              </div>
+            </dl>
+            <div className="case-row-actions">
+              <a className="button-primary" href={`${portfolioPath}#${project.id}`}>
+                阅读完整案例 <ArrowUpRight size={15} />
+              </a>
+              <button type="button" className="button-link" onClick={() => setMode('workflow')}>
+                直接体验工作流 <ArrowRight size={15} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.article>
   );
 }
@@ -233,40 +311,75 @@ function SectionHeading({ label, title, intro, aside }) {
 function ProjectsSection() {
   const [previewProject, setPreviewProject] = useState(null);
   return (
-    <section className="projects-section page-width" id="projects">
-      <SectionHeading
-        label="代表项目"
-        title="用具体交付，回答能力。"
-        intro="每个案例都按同样的顺序阅读：业务问题、我的判断、交付内容与验证方式。"
-        aside={<a className="button-link" href={portfolioPath}>全部案例详情 <ArrowRight size={16} /></a>}
-      />
-      <div className="case-list">
-        {projects.map((project) => <ProjectRow project={project} key={project.id} onPreview={() => setPreviewProject(project)} />)}
+    <section className="projects-section" id="projects">
+      <div className="page-width">
+        <SectionHeading
+          label="Core Case Studies"
+          title="用具体交付 证明业务优化能力"
+          intro="每个案例清晰呈现「原有痛点 → AI 流程重构 → 实际交付与交互验证」，支持直接切换体验核心工作流。"
+          aside={<a className="button-link" href={portfolioPath}>全部案例详情页 <ArrowRight size={16} /></a>}
+        />
+
+        <nav className="case-quick-nav" aria-label="快速定位案例">
+          {projects.map((project) => (
+            <a key={project.id} className="case-quick-pill" href={`#preview-${project.id}`}>
+              <span className="case-quick-pill-left">
+                <span className="case-quick-num">{project.number}</span>
+                <span className="case-quick-title">{project.title}</span>
+              </span>
+              <ArrowDown size={14} color="var(--muted)" aria-hidden="true" />
+            </a>
+          ))}
+        </nav>
+
+        <div className="case-list">
+          {projects.map((project) => (
+            <ProjectRow
+              project={project}
+              key={project.id}
+              onPreview={() => setPreviewProject(project)}
+            />
+          ))}
+        </div>
+
+        <div className="archive-teaser">
+          <div>
+            <strong>更多实战与自动化案例（+{archiveCases.length} 个）</strong>
+            <p>涵盖 RPA 订单管线、评论洞察看板、竞品监控、企业 AI SOP 与轻量助手矩阵，持续更新。</p>
+          </div>
+          <a className="button-primary" href={portfolioPath}>
+            进入完整案例集 <ArrowRight size={15} />
+          </a>
+        </div>
+        {previewProject && <CaseDialog project={previewProject} onClose={() => setPreviewProject(null)} />}
       </div>
-      {previewProject && <CaseDialog project={previewProject} onClose={() => setPreviewProject(null)} />}
     </section>
   );
 }
 
 const methodItems = [
-  ['01', '澄清真实问题', '了解用户、流程、数据来源和人工判断边界，确定这次交付要解决的具体环节。', '需求与边界清单', '医疗客服先区分服务咨询与专业判断，再决定知识库回答和人工接管的边界。'],
-  ['02', '接入现有系统', '围绕已有 API、文档和业务数据建模，让 AI 工作流接入实际信息源。', '数据模型与接入链路', '周报平台把员工、部门、原始周报与工作事项拆成四类核心模型。'],
-  ['03', '拆分模型与规则', '结构化提取交给模型，确定性约束交给规则；不确定内容进入待确认流程。', '模型约束与规则流程', '选校 Agent 先过滤确定性条件，再对专业背景等要求进行语义判断。'],
-  ['04', '验证并交接', '用真实任务场景回归结果，保留来源、状态与人工接管路径，支持后续迭代。', '回归场景与交接说明', '案例保留来源核验、失败重试、待确认状态和人工出口等验证路径。'],
+  ['01', '拆解真实业务现场', '先摸清流程瓶颈、数据来源与人工判断边界，明确 AI 应该接管哪一环，而不是为了加 AI 而加。', '需求与边界清单', '医疗客服先切分常规服务咨询与高风险医疗判断，再定知识库和人工接管界线。'],
+  ['02', '接入现有业务系统', '围绕已有 API、文档与数据库建好核心模型，让 AI 流程自然融入团队日常工具，零割裂感。', '数据模型与接入链路', '周报平台把员工、部门、原始周报与工作事项拆成四类核心数据模型。'],
+  ['03', '规则与模型各司其职', '确定性条件交给规则引擎，非结构化语义交给 LLM，不确定的内容一律进待确认队列。', '模型约束与规则流程', '选校 Agent 先用硬规则过滤 GPA、语言与预算，再由模型评估复杂背景。'],
+  ['04', '留痕可追溯、验收可交接', '用真实业务样本做端到端回归，保留原文来源、核验状态与人工兜底路径，确保长期稳定运行。', '回归场景与交接说明', '全链路保留来源引用、失败重试、状态标记与人工出口。'],
 ];
 
 function ApproachSection() {
   return (
     <section className="approach-section" id="approach">
       <div className="page-width">
-        <SectionHeading label="工作方法" title="从现场问题，推进到可复核的交付。" intro="场景各不相同，但每次交付都从明确问题与数据边界开始，再逐层把方案跑通。" />
+        <SectionHeading
+          label="Methodology"
+          title="从现场问题 推进到可复核的系统交付"
+          intro="业务场景各不相同，但每次 AI 落地都遵循清晰的工程边界：先跑通确定性，再释放模型能力。"
+        />
         <ol className="method-list">
           {methodItems.map(([number, title, desc, deliverable, example]) => (
             <li className="method-item" key={number}>
               <span className="method-number">{number}</span>
               <h3>{title}</h3>
               <p>{desc}</p>
-              <p className="method-deliverable"><span>交付物</span>{deliverable}</p>
+              <p className="method-deliverable"><span>关键交付物</span>{deliverable}</p>
               <p className="method-example">{example}</p>
             </li>
           ))}
@@ -277,8 +390,8 @@ function ApproachSection() {
 }
 
 const skills = [
-  ['AI 应用', 'LLM API · RAG / 知识库 · Structured Output · Prompt Engineering · Agent / Skill 设计 · 规则约束与评测'],
-  ['后端与数据', 'Python · FastAPI · Node.js · PostgreSQL · MySQL · Redis'],
+  ['AI 应用工程', 'LLM API · RAG / 知识库 · Structured Output · Prompt Engineering · Agent / Skill 设计 · 规则约束与回归评测'],
+  ['后端与数据', 'Python · FastAPI · Node.js · PostgreSQL · MySQL · Redis · 企业微信 API'],
   ['前端与交付', 'React · Next.js · TypeScript · Docker · Nginx · Git'],
 ];
 
@@ -286,9 +399,9 @@ function ExperienceSection() {
   return (
     <section className="experience-section page-width" id="experience">
       <div className="experience-intro">
-        <p className="section-label">经历与技术栈</p>
-        <ParticleTitle as="h2" variant="section" text="从业务问题到系统交付" />
-        <p className="section-intro">围绕 AI 应用落地，承担需求分析、数据建模、接口集成与系统验收。</p>
+        <p className="section-label">Track Record</p>
+        <ParticleTitle as="h2" variant="section" text="履历背书与技术底座" />
+        <p className="section-intro">围绕企业 AI 应用落地，独立承担需求调研、架构设计、工程开发到业务验收全链路。</p>
         <dl className="skill-list">
           {skills.map(([group, items]) => <div key={group}><dt>{group}</dt><dd>{items}</dd></div>)}
         </dl>
@@ -326,10 +439,12 @@ function CopyButton({ value, label }) {
   return (
     <span className="copy-action">
       <button type="button" className="copy-button" onClick={copy} aria-label={`复制${label}`}>
-        {status === 'copied' ? <Check size={15} /> : <Copy size={15} />}
+        {status === 'copied' ? <Check size={14} /> : <Copy size={14} />}
         <span>{status === 'copied' ? '已复制' : '复制'}</span>
       </button>
-      <span className={`copy-feedback${status === 'error' ? ' visible' : ''}`} role="status">{status === 'error' ? '未能复制，请手动选择文字复制。' : status === 'copied' ? `${label}已复制` : ''}</span>
+      <span className={`copy-feedback${status === 'error' ? ' visible' : ''}`} role="status">
+        {status === 'error' ? '未能复制，请手动选择文字复制。' : status === 'copied' ? `${label}已复制` : ''}
+      </span>
     </span>
   );
 }
@@ -339,9 +454,9 @@ function ContactSection() {
     <section className="contact-section" id="contact">
       <div className="contact-inner page-width">
         <div className="contact-copy">
-          <p className="section-label">联系</p>
-          <ParticleTitle as="h2" variant="section" text="一起把 AI 接入真实业务。" className="on-dark" />
-          <p>欢迎交流 AI 应用工程、FDE 岗位与企业工作流项目。</p>
+          <p className="section-label">Contact</p>
+          <ParticleTitle as="h2" variant="section" text="一起把 AI 接入真实业务" className="on-dark" />
+          <p>欢迎交流 FDE 工程师岗位、AI 应用工程化与企业工作流优化项目。</p>
           <PrintButton className="print-button on-dark" />
         </div>
         <dl className="contact-list">
@@ -363,11 +478,11 @@ function Footer() {
   );
 }
 
-function HomePage({ theme, onThemeChange }) {
+function HomePage() {
   useEffect(() => { document.title = '游丰奕 — FDE 工程师 / AI 应用交付'; }, []);
   return (
     <>
-      <Header theme={theme} onThemeChange={onThemeChange} />
+      <Header />
       <main>
         <Hero />
         <ProjectsSection />
@@ -380,107 +495,247 @@ function HomePage({ theme, onThemeChange }) {
   );
 }
 
-function ProjectCase({ project }) {
+const flagshipCategoryMap = {
+  'weekly-intelligence': 'enterprise',
+  'university-agent': 'agent',
+  'medical-concierge': 'service',
+};
+
+function FlagshipCaseCard({ project, onOpenDemo }) {
   const demo = caseDemos[project.id];
+  const [expanded, setExpanded] = useState(false);
+
   return (
-    <article className="case-study" id={project.id}>
-      <header className="case-header">
-        <p className="case-meta"><span>案例 {project.number}</span>{demo.capability}</p>
-        <ParticleTitle as="h2" variant="case" text={project.title} />
-        <p className="case-summary">{project.summary}</p>
-        <dl className="case-header-facts">
-          <div><dt>范围</dt><dd>{project.scope}</dd></div>
-          <div><dt>我的职责</dt><dd>{project.role}</dd></div>
-          <div><dt>技术栈</dt><dd>{project.stack.join(' · ')}</dd></div>
-        </dl>
-      </header>
-      <div className="case-body">
-        <aside className="case-rail">
-          <nav className="case-chapters" aria-label={`${project.title}章节`}>
-            <a href={`#${project.id}-delivery`}>交付重点</a>
-            <a href={`#${project.id}-context`}>业务与判断</a>
-            <a href={`#${project.id}-demo`}>流程演示</a>
-            <a href={`#${project.id}-design`}>系统设计</a>
-            <a href={`#${project.id}-validation`}>验证与边界</a>
-          </nav>
-          {project.repository && <a className="button-link repository-link" href={project.repository.url} target="_blank" rel="noreferrer">{project.repository.label}<ExternalLink size={14} /></a>}
-        </aside>
-        <div className="case-content">
-          <section className="case-delivery" id={`${project.id}-delivery`}>
-            <h3 className="case-section-label">交付重点</h3>
-            <p className="case-lead">{demo.takeaway}</p>
-            <ul>{project.deliverables.map((item) => <li key={item}><Check size={16} aria-hidden="true" /><span>{item}</span></li>)}</ul>
-          </section>
-          <section className="case-narrative" id={`${project.id}-context`}>
-            <div><h3 className="case-section-label">业务现场</h3><p>{project.situation}</p></div>
-            <div><h3 className="case-section-label">方案判断</h3><p>{project.approach}</p></div>
-          </section>
-          <div id={`${project.id}-demo`} className="case-demo-anchor">
-            <CaseExperience project={project} />
-            {project.id === 'medical-concierge' && <ChatbotDemo />}
-          </div>
-          <ResponsiveDetails label="系统设计与验证" className="case-engineering-details">
-            <section className="architecture-section" id={`${project.id}-design`}>
-              <h3 className="case-section-label">系统分层与职责</h3>
-              <table className="architecture-table">
-                <tbody>
-                  {project.architecture.map(([name, description]) => <tr key={name}><th scope="row">{name}</th><td>{description}</td></tr>)}
-                </tbody>
-              </table>
-            </section>
-            <section className="decisions-section">
-              <h3 className="case-section-label">关键设计决策</h3>
-              <ol className="decision-list">
-                {project.decisions.map(([title, description]) => <li key={title}><h4>{title}</h4><p>{description}</p></li>)}
-              </ol>
-            </section>
-            <section className="verification-section" id={`${project.id}-validation`}>
-              <h3 className="case-section-label">验证方式与边界</h3>
-              <ul>{project.verification.map((item) => <li key={item}><Check size={15} aria-hidden="true" /><span>{item}</span></li>)}</ul>
-            </section>
-          </ResponsiveDetails>
+    <article className="flagship-card" id={project.id}>
+      <div className="flagship-card-grid">
+        <div className="flagship-visual">
+          <CaseVisual project={project} onOpen={onOpenDemo} />
         </div>
+        <div className="flagship-body">
+          <div className="flagship-meta-row">
+            <span className="flagship-num">{project.number}</span>
+            <span className="flagship-scope">{demo.capability} · {project.scope}</span>
+          </div>
+          <h3 className="flagship-title">{project.title}</h3>
+          <p className="flagship-summary">{project.summary}</p>
+
+          <div className="flagship-workflow-bar">
+            {project.workflow.map((stepName, index) => (
+              <React.Fragment key={stepName}>
+                <span className="workflow-step-chip">{stepName}</span>
+                {index < project.workflow.length - 1 && (
+                  <span className="workflow-step-sep" aria-hidden="true">→</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          <ul className="flagship-points">
+            {project.deliverables.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+
+          <div className="flagship-footer">
+            <div className="stack-chips">
+              {project.stack.map((tag) => <span key={tag}>{tag}</span>)}
+            </div>
+            <div className="flagship-actions">
+              <button type="button" className="button-primary btn-compact" onClick={onOpenDemo}>
+                <Play size={13} /> 交互工作流
+              </button>
+              <button
+                type="button"
+                className="button-secondary btn-compact"
+                aria-expanded={expanded}
+                onClick={() => setExpanded((prev) => !prev)}
+              >
+                {expanded ? '收起架构细节' : '架构与决策'}
+                <ChevronDown size={14} style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </button>
+              {project.repository && (
+                <a className="button-link" href={project.repository.url} target="_blank" rel="noreferrer">
+                  代码 <ExternalLink size={13} />
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="flagship-drawer">
+          <div className="flagship-drawer-cols">
+            <div>
+              <h4 className="case-section-label">业务背景与方案判断</h4>
+              <p>{project.situation}</p>
+              <p style={{ marginTop: 8 }}>{project.approach}</p>
+            </div>
+            <div>
+              <h4 className="case-section-label">系统分层与职责</h4>
+              <dl className="flagship-arch-list">
+                {project.architecture.map(([name, desc]) => (
+                  <div key={name}>
+                    <dt>{name}</dt>
+                    <dd>{desc}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+            <div>
+              <h4 className="case-section-label">关键设计决策与验证</h4>
+              <ul className="flagship-decision-list">
+                {project.decisions.map(([title, desc]) => (
+                  <li key={title}><strong>{title}：</strong>{desc}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          {project.id === 'medical-concierge' && <ChatbotDemo />}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function ArchiveCaseCard({ item }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <article className="archive-card" id={item.id}>
+      <div className="archive-card-top">
+        <span className="archive-card-num">{item.number}</span>
+        <span className="archive-card-tag">{item.tag}</span>
+        <span className="archive-card-impact">{item.impact}</span>
+      </div>
+      <h3 className="archive-card-title">{item.title}</h3>
+      <p className="archive-card-summary">{item.summary}</p>
+      <div className="archive-card-flow">
+        {item.workflow.map((stepName, index) => (
+          <React.Fragment key={stepName}>
+            <span>{stepName}</span>
+            {index < item.workflow.length - 1 && <i aria-hidden="true">→</i>}
+          </React.Fragment>
+        ))}
+      </div>
+      {open && <p className="archive-card-detail">{item.details}</p>}
+      <div className="archive-card-bottom">
+        <div className="archive-card-stack">
+          {item.stack.map((s) => <span key={s}>{s}</span>)}
+        </div>
+        <button
+          type="button"
+          className="archive-card-more"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+        >
+          {open ? '收起' : '详情'}
+        </button>
       </div>
     </article>
   );
 }
 
-function PortfolioPage({ theme, onThemeChange }) {
+function PortfolioPage() {
+  const [category, setCategory] = useState('all');
+  const [activeDialogProject, setActiveDialogProject] = useState(null);
+
   useEffect(() => {
-    document.title = '项目案例 — 游丰奕';
+    document.title = '项目案例集 — 游丰奕';
     if (!window.location.hash) return;
     const targetId = decodeURIComponent(window.location.hash.slice(1));
     requestAnimationFrame(() => requestAnimationFrame(() => {
       const target = document.getElementById(targetId);
       if (!target) return;
       const headerHeight = document.querySelector('.site-header')?.getBoundingClientRect().height ?? 0;
-      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - headerHeight - 12, behavior: 'auto' });
+      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - headerHeight - 16, behavior: 'auto' });
     }));
   }, []);
+
+  const filteredFlagships = category === 'all'
+    ? projects
+    : projects.filter((p) => flagshipCategoryMap[p.id] === category);
+
+  const filteredArchives = category === 'all'
+    ? archiveCases
+    : archiveCases.filter((item) => item.categoryKey === category);
+
+  const totalCount = projects.length + archiveCases.length;
+
   return (
     <>
-      <Header projectPage theme={theme} onThemeChange={onThemeChange} />
+      <Header projectPage />
       <main className="portfolio-main">
-        <section className="portfolio-hero" id="home">
-          <div className="page-width portfolio-hero-inner">
-            <a className="back-link" href="index.html"><ArrowLeft size={15} /> 返回首页</a>
-            <p className="eyebrow">项目案例</p>
-            <ParticleTitle as="h1" variant="page" lines={['每一次交付，', '都有判断的依据。']} />
-            <p className="hero-intro">先看业务问题，再看方案判断、系统分层与验证边界。三个案例，呈现我如何把数据、模型、规则和人工流程连接成可用系统。</p>
+        <section className="portfolio-hero-compact" id="home">
+          <div className="page-width portfolio-hero-row">
+            <div>
+              <a className="back-link-compact" href="index.html"><ArrowLeft size={14} /> 返回首页</a>
+              <ParticleTitle as="h1" variant="section" text="项目案例集" />
+              <p className="portfolio-sub">
+                3 个旗舰深度交付案例 + {archiveCases.length} 个轻量业务与自动化案例，按业务场景持续扩充。
+              </p>
+            </div>
+            <div className="portfolio-filter-bar" role="tablist" aria-label="案例分类筛选">
+              {caseCategories.map((cat) => {
+                const count = cat.key === 'all'
+                  ? totalCount
+                  : projects.filter((p) => flagshipCategoryMap[p.id] === cat.key).length
+                    + archiveCases.filter((a) => a.categoryKey === cat.key).length;
+                return (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={category === cat.key}
+                    className={`filter-pill${category === cat.key ? ' active' : ''}`}
+                    onClick={() => setCategory(cat.key)}
+                  >
+                    <span>{cat.label}</span>
+                    <em>{count}</em>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </section>
-        <nav className="case-index page-width" id="case-index" aria-label="案例目录">
-          {projects.map((project) => (
-            <a key={project.id} href={`#${project.id}`}>
-              <span className="case-index-number">{project.number}</span>
-              <span className="case-index-text"><strong>{project.title}</strong><small>{caseDemos[project.id].capability}</small></span>
-              <ArrowDown size={18} aria-hidden="true" />
-            </a>
-          ))}
-        </nav>
-        <div className="page-width case-studies">
-          {projects.map((project) => <ProjectCase project={project} key={project.id} />)}
-        </div>
+
+        {filteredFlagships.length > 0 && (
+          <section className="portfolio-section page-width" id="flagship-cases">
+            <div className="portfolio-section-bar">
+              <span className="section-label" style={{ margin: 0 }}>Flagship Cases</span>
+              <h2>核心旗舰案例（{filteredFlagships.length}）</h2>
+            </div>
+            <div className="flagship-list">
+              {filteredFlagships.map((project) => (
+                <FlagshipCaseCard
+                  key={project.id}
+                  project={project}
+                  onOpenDemo={() => setActiveDialogProject(project)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {filteredArchives.length > 0 && (
+          <section className="portfolio-section portfolio-archive-band" id="archive-cases">
+            <div className="page-width">
+              <div className="portfolio-section-bar">
+                <span className="section-label" style={{ margin: 0 }}>More Projects & Archive</span>
+                <h2>更多实战与扩展案例（{filteredArchives.length}）</h2>
+              </div>
+              <div className="archive-grid">
+                {filteredArchives.map((item) => (
+                  <ArchiveCaseCard key={item.id} item={item} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {activeDialogProject && (
+          <CaseDialog project={activeDialogProject} onClose={() => setActiveDialogProject(null)} />
+        )}
         <ContactSection />
       </main>
       <Footer />
@@ -496,16 +751,11 @@ function ReadingProgress() {
 }
 
 function App() {
-  const [theme, setTheme] = useBenchmarkTheme();
   return (
     <div className={isProjectPage ? 'app project-app' : 'app'}>
       <div className="screen-site">
         <ReadingProgress />
-        {isProjectPage ? (
-          <PortfolioPage theme={theme} onThemeChange={setTheme} />
-        ) : (
-          <HomePage theme={theme} onThemeChange={setTheme} />
-        )}
+        {isProjectPage ? <PortfolioPage /> : <HomePage />}
       </div>
       <ResumeDocument />
     </div>

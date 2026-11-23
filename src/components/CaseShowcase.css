@@ -68,8 +68,8 @@
 }
 
 .case-visual:hover .visual-open {
-  background: var(--ink);
-  border-color: var(--ink);
+  background: var(--accent);
+  border-color: var(--accent);
   color: #fff;
 }
 
