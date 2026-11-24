@@ -1,1 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#183247"/><path d="m8 8 8 10 8-10M16 18v7" fill="none" stroke="#fffefa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="logo-bg" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#133898"/>
+      <stop offset="55%" stop-color="#1e56d8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="logo-accent" x1="14" y1="8" x2="26" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7dd3fc"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#logo-bg)"/>
+  <!-- 双轨数据流汇聚节点 → 输出系统（几何工程符号） -->
+  <path d="M8.5 10.5H13.5L17.5 16L13.5 21.5H8.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M17.5 16H24" stroke="url(#logo-accent)" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="8.5" cy="10.5" r="2" fill="#7dd3fc"/>
+  <circle cx="8.5" cy="21.5" r="2" fill="#ffffff"/>
+  <rect x="21.4" y="13.4" width="5.2" height="5.2" rx="1.2" transform="rotate(45 24 16)" fill="#ffffff"/>
+</svg>

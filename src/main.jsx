@@ -10,13 +10,13 @@ import {
   ChevronDown,
   Copy,
   Download,
-  ExternalLink,
   Layers,
   Menu,
   Play,
+  Sparkles,
   X,
 } from 'lucide-react';
-import { archiveCases, caseCategories, contact, experience, projects } from './content.js';
+import { archiveCases, caseCategories, contact, experience, profileSummary, projects } from './content.js';
 import { caseDemos } from './caseDemos.js';
 import { CaseDialog, CaseExperience, CaseVisual } from './components/CaseShowcase.jsx';
 import { ResumeDocument } from './components/ResumeDocument.jsx';
@@ -64,6 +64,30 @@ function PrintButton({ className = 'print-button' }) {
   );
 }
 
+function BrandLogo() {
+  return (
+    <svg className="brand-mark-svg" width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="nav-logo-bg" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#133898" />
+          <stop offset="55%" stopColor="#1e56d8" />
+          <stop offset="100%" stopColor="#2563eb" />
+        </linearGradient>
+        <linearGradient id="nav-logo-accent" x1="14" y1="8" x2="26" y2="24" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#7dd3fc" />
+          <stop offset="100%" stopColor="#38bdf8" />
+        </linearGradient>
+      </defs>
+      <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#nav-logo-bg)" />
+      <path d="M8.5 10.5H13.5L17.5 16L13.5 21.5H8.5" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M17.5 16H24" stroke="url(#nav-logo-accent)" strokeWidth="2.2" strokeLinecap="round" />
+      <circle cx="8.5" cy="10.5" r="2" fill="#7dd3fc" />
+      <circle cx="8.5" cy="21.5" r="2" fill="#ffffff" />
+      <rect x="21.4" y="13.4" width="5.2" height="5.2" rx="1.2" transform="rotate(45 24 16)" fill="#ffffff" />
+    </svg>
+  );
+}
+
 function Header({ projectPage = false }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const nav = projectPage
@@ -80,7 +104,7 @@ function Header({ projectPage = false }) {
     <header className="site-header">
       <div className="header-inner">
         <a className="brand" href="index.html" aria-label="游丰奕，返回首页">
-          <span className="brand-mark" aria-hidden="true">游</span>
+          <BrandLogo />
           <span className="brand-name">游丰奕</span>
           <span className="brand-role">FDE 工程师 · AI 应用交付</span>
         </a>
@@ -110,29 +134,23 @@ function Header({ projectPage = false }) {
 const heroFacts = [
   {
     id: 'weekly-intelligence',
-    value: '约 40 人',
-    title: '企业微信周报分析',
-    desc: '把逐份人工阅读重构为可下钻、可回查原文的智能分析链路',
+    value: '几小时 → 几分钟',
+    title: '40 人周报分析',
+    desc: '自动同步企业微信周报并拆成具体工作项，点开部门员工直达原文核对',
   },
   {
     id: 'university-agent',
-    value: '约 196 所',
-    title: '高校调研与选校 Agent',
-    desc: '把人工调研封装为可复用 Skill，拆出硬规则与语义双层筛选',
+    value: '3 所/周 → 10+ 所/天',
+    title: '200+ 高校简章采集',
+    desc: '自研 Skill 挂后台自动搜官网解析 PDF 写表入库，省掉外包',
   },
   {
     id: 'medical-concierge',
-    value: '约 170 条',
-    title: '跨境医疗双语客服',
-    desc: '基于 Dify + RAG 实现受约束双语问答、留资与人工安全接管',
+    value: '170 条双语 FAQ',
+    title: '7×24 医疗客服',
+    desc: '跨时区常规咨询自动回复并顺手留资，病情和报价直接转人工',
   },
 ];
-
-const workflowBefore = {
-  'weekly-intelligence': '管理者逐人翻阅自然语言周报，难以跨部门汇总，卡点与重复工作只能靠人工记忆。',
-  'university-agent': '人工逐校检索官网与历年简章、手动核对条件并填表，耗时且容易混入过期或第三方信息。',
-  'medical-concierge': '人工客服跨时区重复回复基础咨询，高风险医疗问题与有效业务线索混杂难分流。',
-};
 
 function Hero() {
   return (
@@ -204,13 +222,8 @@ function ProjectRow({ project, onPreview }) {
         <div className="case-row-head-main">
           <span className="case-row-number">{project.number}</span>
           <div>
-            <p className="case-row-meta">
-              {demo.capability}
-              <span aria-hidden="true">·</span>
-              {project.scope}
-            </p>
+            <p className="case-row-meta">{project.scope}</p>
             <h3>{project.title}</h3>
-            <p className="case-row-summary">{project.summary}</p>
           </div>
         </div>
         <div className="case-view-tabs" role="tablist" aria-label={`${project.title}展示切换`}>
@@ -235,17 +248,18 @@ function ProjectRow({ project, onPreview }) {
         </div>
       </header>
 
-      {/* AI 流程重构对比：一眼看清业务是怎么被优化的 */}
-      <div className="workflow-compare" aria-label="AI 流程重构对比">
+      {/* 之前 / 现在极简对比 */}
+      <div className="workflow-compare" aria-label="优化前后对比">
         <div className="workflow-compare-col before">
-          <span className="workflow-compare-label">Before · 原有人工痛点</span>
-          <p className="workflow-compare-text">{workflowBefore[project.id]}</p>
+          <span className="workflow-compare-label">之前</span>
+          <p className="workflow-compare-text">{project.before}</p>
         </div>
         <div className="workflow-compare-arrow" aria-hidden="true">
           <ArrowRight size={18} />
         </div>
         <div className="workflow-compare-col after">
-          <span className="workflow-compare-label">After · AI 流程重构</span>
+          <span className="workflow-compare-label">现在</span>
+          <p className="workflow-compare-text">{project.after}</p>
           <div className="workflow-steps-inline">
             {project.workflow.map((stepName, index) => (
               <React.Fragment key={stepName}>
@@ -267,7 +281,6 @@ function ProjectRow({ project, onPreview }) {
             <CaseVisual project={project} onOpen={onPreview} />
           </div>
           <div className="case-row-detail">
-            <p className="case-row-takeaway">{demo.takeaway}</p>
             <ul className="case-row-deliverables">
               {project.deliverables.map((item) => <li key={item}>{item}</li>)}
             </ul>
@@ -358,10 +371,10 @@ function ProjectsSection() {
 }
 
 const methodItems = [
-  ['01', '拆解真实业务现场', '先摸清流程瓶颈、数据来源与人工判断边界，明确 AI 应该接管哪一环，而不是为了加 AI 而加。', '需求与边界清单', '医疗客服先切分常规服务咨询与高风险医疗判断，再定知识库和人工接管界线。'],
-  ['02', '接入现有业务系统', '围绕已有 API、文档与数据库建好核心模型，让 AI 流程自然融入团队日常工具，零割裂感。', '数据模型与接入链路', '周报平台把员工、部门、原始周报与工作事项拆成四类核心数据模型。'],
-  ['03', '规则与模型各司其职', '确定性条件交给规则引擎，非结构化语义交给 LLM，不确定的内容一律进待确认队列。', '模型约束与规则流程', '选校 Agent 先用硬规则过滤 GPA、语言与预算，再由模型评估复杂背景。'],
-  ['04', '留痕可追溯、验收可交接', '用真实业务样本做端到端回归，保留原文来源、核验状态与人工兜底路径，确保长期稳定运行。', '回归场景与交接说明', '全链路保留来源引用、失败重试、状态标记与人工出口。'],
+  ['01', '先看现场卡在哪', '先摸清人工耗时、数据来源和不能交给 AI 乱答的边界，不为加 AI 而加。', '例：医疗客服先切分常规咨询与高风险诊疗，再定转人工界线。'],
+  ['02', '接进现有工具', '围绕已有 API、表格和文档建好数据表，让流程直接跑在团队日常工具里。', '例：周报平台直连企微，拆出员工、部门、原文、事项 4 张表。'],
+  ['03', '规则和模型分工', '硬条件交给代码规则，模糊语义交给大模型，拿不准的一律进待确认。', '例：选校先用规则筛硬门槛，开放专业表述再交人工看成绩单。'],
+  ['04', '留痕可追溯、能回归', '每条结果保留来源与状态，用真实样本跑自动化回归，确保长期稳定。', '例：高校选校全链路通过 37 项自动化回归与脏数据拦截。'],
 ];
 
 function ApproachSection() {
@@ -370,16 +383,15 @@ function ApproachSection() {
       <div className="page-width">
         <SectionHeading
           label="Methodology"
-          title="从现场问题 推进到可复核的系统交付"
-          intro="业务场景各不相同，但每次 AI 落地都遵循清晰的工程边界：先跑通确定性，再释放模型能力。"
+          title="从现场问题 到可复核的系统交付"
+          intro="每次 AI 落地都遵循同一条原则：先把确定性框死，再释放模型能力。"
         />
         <ol className="method-list">
-          {methodItems.map(([number, title, desc, deliverable, example]) => (
+          {methodItems.map(([number, title, desc, example]) => (
             <li className="method-item" key={number}>
               <span className="method-number">{number}</span>
               <h3>{title}</h3>
               <p>{desc}</p>
-              <p className="method-deliverable"><span>关键交付物</span>{deliverable}</p>
               <p className="method-example">{example}</p>
             </li>
           ))}
@@ -401,7 +413,16 @@ function ExperienceSection() {
       <div className="experience-intro">
         <p className="section-label">Track Record</p>
         <ParticleTitle as="h2" variant="section" text="履历背书与技术底座" />
-        <p className="section-intro">围绕企业 AI 应用落地，独立承担需求调研、架构设计、工程开发到业务验收全链路。</p>
+
+        <div className="experience-summary">
+          <span className="experience-summary-badge">
+            <Sparkles size={13} aria-hidden="true" />
+            {profileSummary.badge}
+          </span>
+          <p className="experience-summary-headline">{profileSummary.headline}</p>
+          <p className="experience-summary-body">{profileSummary.body}</p>
+        </div>
+
         <dl className="skill-list">
           {skills.map(([group, items]) => <div key={group}><dt>{group}</dt><dd>{items}</dd></div>)}
         </dl>
@@ -410,10 +431,12 @@ function ExperienceSection() {
         {experience.map((item) => (
           <li className="experience-item" key={item.company}>
             <time>{item.period}</time>
-            <div>
+            <div className="experience-body">
               <h3>{item.title}</h3>
               <p className="experience-company">{item.company}</p>
-              <p>{item.details}</p>
+              <ul className="experience-highlights">
+                {item.highlights.map((point) => <li key={point}>{point}</li>)}
+              </ul>
             </div>
           </li>
         ))}
@@ -462,7 +485,6 @@ function ContactSection() {
         <dl className="contact-list">
           <div><dt>邮箱</dt><dd><a href={`mailto:${contact.email}`}>{contact.email}</a><CopyButton value={contact.email} label="邮箱" /></dd></div>
           <div><dt>微信</dt><dd><span>{contact.wechat}</span><CopyButton value={contact.wechat} label="微信" /></dd></div>
-          <div><dt>GitHub</dt><dd><a href={contact.github} target="_blank" rel="noreferrer">{contact.github.replace('https://', '')} <ExternalLink size={14} /></a></dd></div>
         </dl>
       </div>
     </section>
@@ -514,10 +536,9 @@ function FlagshipCaseCard({ project, onOpenDemo }) {
         <div className="flagship-body">
           <div className="flagship-meta-row">
             <span className="flagship-num">{project.number}</span>
-            <span className="flagship-scope">{demo.capability} · {project.scope}</span>
+            <span className="flagship-scope">{project.scope}</span>
           </div>
           <h3 className="flagship-title">{project.title}</h3>
-          <p className="flagship-summary">{project.summary}</p>
 
           <div className="flagship-workflow-bar">
             {project.workflow.map((stepName, index) => (
@@ -530,11 +551,16 @@ function FlagshipCaseCard({ project, onOpenDemo }) {
             ))}
           </div>
 
-          <ul className="flagship-points">
-            {project.deliverables.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
+          <div className="flagship-compare">
+            <div className="flagship-compare-row">
+              <span className="flagship-compare-tag before">之前</span>
+              <p>{project.before}</p>
+            </div>
+            <div className="flagship-compare-row">
+              <span className="flagship-compare-tag after">现在</span>
+              <p>{project.after}</p>
+            </div>
+          </div>
 
           <div className="flagship-footer">
             <div className="stack-chips">
@@ -553,11 +579,6 @@ function FlagshipCaseCard({ project, onOpenDemo }) {
                 {expanded ? '收起架构细节' : '架构与决策'}
                 <ChevronDown size={14} style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
-              {project.repository && (
-                <a className="button-link" href={project.repository.url} target="_blank" rel="noreferrer">
-                  代码 <ExternalLink size={13} />
-                </a>
-              )}
             </div>
           </div>
         </div>
@@ -600,6 +621,7 @@ function FlagshipCaseCard({ project, onOpenDemo }) {
 
 function ArchiveCaseCard({ item }) {
   const [open, setOpen] = useState(false);
+  const match = item.details?.match(/^之前[：:]\s*([\s\S]*?)\s*现在[：:]\s*([\s\S]*)$/);
 
   return (
     <article className="archive-card" id={item.id}>
@@ -618,7 +640,22 @@ function ArchiveCaseCard({ item }) {
           </React.Fragment>
         ))}
       </div>
-      {open && <p className="archive-card-detail">{item.details}</p>}
+      {open && (
+        match ? (
+          <div className="archive-card-detail archive-detail-compare">
+            <div className="archive-detail-row">
+              <span className="archive-detail-tag before">之前</span>
+              <p>{match[1]}</p>
+            </div>
+            <div className="archive-detail-row">
+              <span className="archive-detail-tag after">现在</span>
+              <p>{match[2]}</p>
+            </div>
+          </div>
+        ) : (
+          <p className="archive-card-detail">{item.details}</p>
+        )
+      )}
       <div className="archive-card-bottom">
         <div className="archive-card-stack">
           {item.stack.map((s) => <span key={s}>{s}</span>)}

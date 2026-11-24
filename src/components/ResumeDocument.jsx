@@ -1,13 +1,13 @@
-import { contact, experience, projects } from '../content.js';
+import { contact, experience, profileSummary, projects } from '../content.js';
 
 export function ResumeDocument() {
   return (
     <article className="resume-document" aria-label="游丰奕的打印简历">
       <header className="resume-header">
-        <div><h1>游丰奕</h1><p>FDE 工程师 / AI 应用交付</p></div>
-        <address>邮箱：{contact.email}<br />微信：{contact.wechat}<br /><a href={contact.github}>{contact.github.replace('https://', '')}</a></address>
+        <div><h1>游丰奕</h1><p>FDE 工程师 / AI 应用交付 · AI 技术狂热爱好者</p></div>
+        <address>邮箱：{contact.email}<br />微信：{contact.wechat}</address>
       </header>
-      <p className="resume-profile">偏工程型的 AI 应用交付者，能从业务现场拆问题，也能把数据、模型、规则和系统接到一条线上；擅长把模糊、依赖人工的流程重构成可运行、可追溯、可验收的 AI 工作流。</p>
+      <p className="resume-profile">{profileSummary.headline}{profileSummary.body}</p>
       <section className="resume-skills">
         <h2>专业技能</h2>
         <p><strong>AI 应用</strong> LLM API · RAG / 知识库 · Structured Output · Prompt Engineering · Agent / Skill 设计 · 规则约束与评测</p>
