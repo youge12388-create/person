@@ -629,23 +629,88 @@ button.demo-data-row:hover {
     aspect-ratio: 16 / 9;
   }
 
+  .visual-open {
+    bottom: 10px;
+    right: 10px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
   .case-dialog {
     width: 100%;
     max-width: none;
     max-height: 94dvh;
     margin: auto 0 0;
-    padding: 20px 18px max(20px, env(safe-area-inset-bottom));
+    padding: 18px 16px max(18px, env(safe-area-inset-bottom));
     border-radius: 14px 14px 0 0;
+  }
+
+  .dialog-top {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+
+  .dialog-top h2 {
+    font-size: 18px;
   }
 
   .dialog-bottom {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 12px;
+    padding-top: 14px;
+  }
+
+  .dialog-bottom .button-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .case-experience {
+    margin-bottom: 8px;
+  }
+
+  .demo-heading h3 {
+    font-size: 16.5px;
+    line-height: 1.45;
+  }
+
+  .demo-tabs {
+    width: 100%;
+    margin: 12px 0;
+    background: var(--bg-alt);
+  }
+
+  .demo-tabs button {
+    flex: 1;
+    min-height: 36px;
+    justify-content: center;
+    font-size: 12.5px;
+  }
+
+  .demo-scenarios {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .demo-scenarios button {
+    min-height: 34px;
+    padding: 4px 6px;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .demo-context {
+    margin-bottom: 10px;
+    font-size: 13px;
+    line-height: 1.55;
   }
 
   .demo-window-bar,
-  .demo-step-list,
+  .demo-step-select,
   .demo-controls > span {
     display: none;
   }
@@ -655,43 +720,116 @@ button.demo-data-row:hover {
     min-height: 0;
   }
 
-  .demo-step-select {
+  .demo-step-list {
     display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
-    min-width: 0;
-    padding: 12px 14px;
+    padding: 10px;
+    border-right: 0;
     border-bottom: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 13px;
+    background: var(--bg-alt);
   }
 
-  .demo-step-select select {
-    width: 100%;
-    min-width: 0;
-    min-height: 44px;
-    padding: 8px 10px;
-    border: 1px solid var(--line-strong);
+  .demo-step-list button {
+    min-height: 36px;
+    padding: 6px 8px;
+    gap: 5px;
+    border: 1px solid var(--line);
     border-radius: 6px;
-    color: var(--ink);
     background: var(--surface);
-    font: 16px var(--sans);
+  }
+
+  .demo-step-list button > span {
+    flex: 0 0 16px;
+    font-size: 10.5px;
+  }
+
+  .demo-step-list strong {
+    font-size: 12px;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .demo-step-list button > svg {
+    display: none;
+  }
+
+  .demo-step-list button[aria-pressed='true'] {
+    border-color: var(--accent);
+    background: #e6efff;
+    color: var(--accent-ink);
+    box-shadow: inset 0 0 0 1px rgba(22, 73, 216, 0.16);
   }
 
   .demo-stage {
-    padding: 16px;
+    padding: 14px;
   }
 
-  .demo-tabs {
-    width: 100%;
+  .demo-stage-meta {
+    font-size: 12px;
   }
 
-  .demo-tabs button {
-    flex: 1;
-    justify-content: center;
+  .demo-stage-content h4 {
+    margin: 8px 0 4px;
+    font-size: 17px;
+  }
+
+  .demo-stage-content > p {
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.68;
+  }
+
+  .demo-input {
+    margin: 12px 0;
+    padding: 12px 14px;
+  }
+
+  .demo-input p {
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+
+  .demo-data-row {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  button.demo-data-row {
+    min-height: 50px;
+  }
+
+  .demo-data-row > span {
+    font-size: 13.5px;
+  }
+
+  .demo-result {
+    margin-top: 12px;
+    padding: 10px 12px;
+  }
+
+  .demo-result p {
+    font-size: 13.5px;
+    line-height: 1.68;
   }
 
   .demo-controls {
+    padding: 10px 12px;
     justify-content: flex-end;
+  }
+
+  .demo-controls > div {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+  }
+
+  .demo-controls button {
+    justify-content: center;
+    min-height: 36px;
   }
 }
 

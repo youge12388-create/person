@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { motion, MotionConfig, useReducedMotion, useScroll, useSpring } from 'motion/react';
+import { motion, MotionConfig, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react';
 import {
   ArrowDown,
   ArrowLeft,
@@ -12,6 +12,7 @@ import {
   Download,
   Layers,
   Menu,
+  Pause,
   Play,
   Sparkles,
   X,
@@ -22,10 +23,26 @@ import { CaseDialog, CaseExperience, CaseVisual } from './components/CaseShowcas
 import { ResumeDocument } from './components/ResumeDocument.jsx';
 import { ChatbotDemo } from './components/ChatbotDemo.jsx';
 import { ParticleTitle } from './components/ParticleTitle.jsx';
+import { initParticleNavigationBridge } from './components/particleTransition.js';
 import './styles.css';
 
+initParticleNavigationBridge();
+
 const portfolioPath = 'portfolio.html';
+const archivePath = 'archive.html';
 const isProjectPage = window.location.pathname.endsWith(portfolioPath);
+const isArchivePage = window.location.pathname.endsWith(archivePath);
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 820px)').matches);
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 820px)');
+    const onChange = (event) => setIsMobile(event.matches);
+    media.addEventListener('change', onChange);
+    return () => media.removeEventListener('change', onChange);
+  }, []);
+  return isMobile;
+}
 
 function ResponsiveDetails({ label, className = '', children }) {
   const [open, setOpen] = useState(() => window.matchMedia('(min-width: 681px)').matches);
@@ -88,11 +105,13 @@ function BrandLogo() {
   );
 }
 
-function Header({ projectPage = false }) {
+function Header({ projectPage = false, archivePage = false }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const nav = projectPage
-    ? [['首页', 'index.html'], ['旗舰案例', '#flagship-cases'], ['更多案例集', '#archive-cases'], ['联系', '#contact']]
-    : [['核心案例', '#projects'], ['案例集', portfolioPath], ['工作方法', '#approach'], ['履历背书', '#experience'], ['联系', '#contact']];
+  const nav = archivePage
+    ? [['首页', 'index.html'], ['旗舰案例', portfolioPath], ['联系', '#contact']]
+    : projectPage
+      ? [['首页', 'index.html'], ['旗舰案例', '#flagship-cases'], ['更多实战案例', archivePath], ['联系', '#contact']]
+      : [['核心案例', '#projects'], ['旗舰详情', portfolioPath], ['实战案例库', archivePath], ['工作方法', '#approach'], ['履历背书', '#experience'], ['联系', '#contact']];
 
   useEffect(() => {
     const closeOnEscape = (event) => { if (event.key === 'Escape') setMenuOpen(false); };
@@ -153,6 +172,80 @@ const heroFacts = [
 ];
 
 function Hero() {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <section className="hero m-hero" id="home">
+        <div className="page-width m-hero-inner">
+          <div className="m-hero-top">
+            <div className="m-hero-head">
+              <div className="m-hero-status">
+                <i aria-hidden="true" />
+                <span>FDE · AI 应用交付</span>
+              </div>
+              <ParticleTitle
+                as="h1"
+                variant="heroMobile"
+                className="m-hero-title-particle"
+                lines={['把 AI 接入业务', '把方案交付成系统']}
+              />
+            </div>
+            <figure className="m-hero-portrait-cutout">
+              <img
+                src="./image/portrait-640.webp"
+                srcSet="./image/portrait-640.webp 640w, ./image/portrait-1200.webp 1200w"
+                sizes="184px"
+                width="1200"
+                height="900"
+                fetchPriority="high"
+                alt="游丰奕"
+              />
+            </figure>
+          </div>
+
+          <p className="m-hero-intro">
+            面向真实业务现场拆解低效流程，把数据、模型、规则与现有系统接成一条可追溯、可复核的 AI 工作流。
+          </p>
+
+          <div className="m-hero-actions">
+            <a className="button-primary" href="#projects">查看核心案例 <ArrowDown size={15} /></a>
+            <a className="button-secondary" href="#contact">联系交流 <ArrowRight size={15} /></a>
+          </div>
+
+          <div className="m-hero-bento" aria-label="核心交付背书">
+            <a className="m-bento-main" href="#preview-university-agent">
+              <div className="m-bento-top">
+                <span className="m-bento-kicker">200+ 高校简章采集 Agent</span>
+                <ArrowUpRight size={15} className="m-bento-arrow" aria-hidden="true" />
+              </div>
+              <strong>3 所/周 → 10+ 所/天</strong>
+              <p>自研后台 Skill 自动搜官网、解析 PDF 写表入库，直接省掉外包团队</p>
+            </a>
+
+            <a className="m-bento-sub" href="#preview-weekly-intelligence">
+              <div className="m-bento-top">
+                <span className="m-bento-label">40 人周报分析</span>
+                <ArrowUpRight size={14} className="m-bento-arrow" aria-hidden="true" />
+              </div>
+              <strong>几小时 <em>→</em> 几分钟</strong>
+              <p>企微自动拆成工作项，直达原文核对</p>
+            </a>
+
+            <a className="m-bento-sub" href="#preview-medical-concierge">
+              <div className="m-bento-top">
+                <span className="m-bento-label">7×24 医疗客服</span>
+                <ArrowUpRight size={14} className="m-bento-arrow" aria-hidden="true" />
+              </div>
+              <strong>170 条 <em>双语 FAQ</em></strong>
+              <p>跨时区自动留资，高风险直接转人工</p>
+            </a>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="hero" id="home">
       <div className="hero-inner page-width">
@@ -321,47 +414,280 @@ function SectionHeading({ label, title, intro, aside }) {
   );
 }
 
+const mobileShortTitles = {
+  'weekly-intelligence': '周报分析',
+  'university-agent': '高校 Agent',
+  'medical-concierge': '医疗客服',
+};
+
+function MobileCaseCarousel({ onPreview }) {
+  const reduced = useReducedMotion();
+  const trackRef = useRef(null);
+  const pauseTimerRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(() => !reduced);
+  const [userPaused, setUserPaused] = useState(false);
+  const [expandedDetailId, setExpandedDetailId] = useState(null);
+
+  const scrollToIndex = (index, smooth = true) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const card = track.children[index];
+    if (!card) return;
+    track.scrollTo({ left: card.offsetLeft, behavior: smooth ? 'smooth' : 'auto' });
+    setActiveIndex(index);
+  };
+
+  const pauseTemporarily = (ms = 8000) => {
+    setAutoPlay(false);
+    clearTimeout(pauseTimerRef.current);
+    if (!userPaused && !reduced) {
+      pauseTimerRef.current = setTimeout(() => setAutoPlay(true), ms);
+    }
+  };
+
+  useEffect(() => {
+    if (!autoPlay || userPaused || reduced || expandedDetailId) return undefined;
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => {
+        const next = (prev + 1) % projects.length;
+        const track = trackRef.current;
+        const card = track?.children[next];
+        if (track && card) {
+          track.scrollTo({ left: card.offsetLeft, behavior: 'smooth' });
+        }
+        return next;
+      });
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [autoPlay, userPaused, reduced, expandedDetailId]);
+
+  useEffect(() => () => clearTimeout(pauseTimerRef.current), []);
+
+  // 监听首屏背书条锚点（#preview-xxx）点击，联动切到对应卡片
+  useEffect(() => {
+    const syncHash = () => {
+      const hash = window.location.hash.replace('#preview-', '');
+      const idx = projects.findIndex((p) => p.id === hash);
+      if (idx >= 0) {
+        pauseTemporarily(10000);
+        scrollToIndex(idx, true);
+      }
+    };
+    window.addEventListener('hashchange', syncHash);
+    syncHash();
+    return () => window.removeEventListener('hashchange', syncHash);
+  }, []);
+
+  const handleScroll = () => {
+    const track = trackRef.current;
+    if (!track) return;
+    const center = track.scrollLeft + track.clientWidth * 0.45;
+    let closest = 0;
+    let minDist = Infinity;
+    for (let i = 0; i < track.children.length; i += 1) {
+      const child = track.children[i];
+      const dist = Math.abs(child.offsetLeft + child.offsetWidth * 0.5 - center);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = i;
+      }
+    }
+    if (closest !== activeIndex) setActiveIndex(closest);
+  };
+
+  return (
+    <div className="mobile-case-carousel" aria-label="核心案例自动轮播">
+      <div className="mobile-carousel-tabs" role="tablist" aria-label="切换核心案例">
+        {projects.map((project, index) => (
+          <button
+            key={project.id}
+            type="button"
+            role="tab"
+            aria-selected={activeIndex === index}
+            className={`mobile-carousel-pill${activeIndex === index ? ' active' : ''}`}
+            onClick={() => {
+              pauseTemporarily(10000);
+              scrollToIndex(index, true);
+            }}
+          >
+            <b>{project.number}</b>
+            <span>{mobileShortTitles[project.id] ?? project.title}</span>
+          </button>
+        ))}
+      </div>
+
+      <div
+        ref={trackRef}
+        className="mobile-carousel-track"
+        onScroll={handleScroll}
+        onTouchStart={() => pauseTemporarily(9000)}
+        onPointerDown={() => pauseTemporarily(9000)}
+      >
+        {projects.map((project) => {
+          const demo = caseDemos[project.id];
+          const isExpanded = expandedDetailId === project.id;
+          return (
+            <article className="mobile-case-card" key={project.id} id={`preview-${project.id}`}>
+              <header className="m-case-head">
+                <span className="m-case-num">{project.number}</span>
+                <div className="m-case-head-text">
+                  <p className="m-case-scope">{project.scope}</p>
+                  <h3>{project.title}</h3>
+                </div>
+              </header>
+
+              <button
+                type="button"
+                className="m-case-visual"
+                aria-label={`体验${project.title}交互工作流`}
+                onClick={() => {
+                  pauseTemporarily(15000);
+                  onPreview(project);
+                }}
+              >
+                <img src={demo.image} alt={demo.imageAlt} loading="lazy" width="1536" height="1024" />
+                <span className="m-case-visual-badge"><Play size={12} /> 体验交互工作流</span>
+              </button>
+
+              <div className="m-case-compare">
+                <div className="m-case-compare-row">
+                  <span className="m-compare-tag before">之前</span>
+                  <p>{project.before}</p>
+                </div>
+                <div className="m-case-compare-row after">
+                  <span className="m-compare-tag after">现在</span>
+                  <p>{project.after}</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="m-case-drawer-btn"
+                aria-expanded={isExpanded}
+                onClick={() => {
+                  pauseTemporarily(15000);
+                  setExpandedDetailId(isExpanded ? null : project.id);
+                }}
+              >
+                <span>{project.deliverables.length} 项交付明细 · {project.stack.slice(0, 3).join(' / ')}</span>
+                <em>{isExpanded ? '收起 −' : '展开细节 +'}</em>
+              </button>
+
+              {isExpanded && (
+                <div className="m-case-drawer-body">
+                  <ul className="m-case-deliverables">
+                    {project.deliverables.map((item) => <li key={item}>{item}</li>)}
+                  </ul>
+                  <div className="m-case-stack">
+                    {project.stack.map((tag) => <span key={tag}>{tag}</span>)}
+                  </div>
+                </div>
+              )}
+
+              <div className="m-case-actions">
+                <button
+                  type="button"
+                  className="button-primary"
+                  onClick={() => {
+                    pauseTemporarily(15000);
+                    onPreview(project);
+                  }}
+                >
+                  <Play size={13} /> 交互工作流
+                </button>
+                <a className="button-secondary" href={`${portfolioPath}#${project.id}`}>
+                  完整案例 <ArrowUpRight size={14} />
+                </a>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="mobile-carousel-footer">
+        <button
+          type="button"
+          className="mobile-autoplay-toggle"
+          onClick={() => {
+            const nextPaused = !userPaused;
+            setUserPaused(nextPaused);
+            setAutoPlay(!nextPaused);
+          }}
+        >
+          {userPaused || !autoPlay ? <Play size={12} /> : <Pause size={12} />}
+          <span>{userPaused ? '已暂停 · 点击继续轮播' : `左右滑动或自动轮播 (${activeIndex + 1}/${projects.length})`}</span>
+        </button>
+        <div className="mobile-carousel-dots" aria-hidden="true">
+          {projects.map((p, idx) => (
+            <button
+              key={p.id}
+              type="button"
+              tabIndex={-1}
+              className={idx === activeIndex ? 'on' : ''}
+              onClick={() => {
+                pauseTemporarily(10000);
+                scrollToIndex(idx, true);
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProjectsSection() {
   const [previewProject, setPreviewProject] = useState(null);
+  const isMobile = useIsMobile();
+
   return (
     <section className="projects-section" id="projects">
       <div className="page-width">
         <SectionHeading
           label="Core Case Studies"
           title="用具体交付 证明业务优化能力"
-          intro="每个案例清晰呈现「原有痛点 → AI 流程重构 → 实际交付与交互验证」，支持直接切换体验核心工作流。"
+          intro={isMobile
+            ? '左右滑动或等待自动切换 3 个旗舰案例，点开图片即可体验交互工作流。'
+            : '每个案例清晰呈现「原有痛点 → AI 流程重构 → 实际交付与交互验证」，支持直接切换体验核心工作流。'}
           aside={<a className="button-link" href={portfolioPath}>全部案例详情页 <ArrowRight size={16} /></a>}
         />
 
-        <nav className="case-quick-nav" aria-label="快速定位案例">
-          {projects.map((project) => (
-            <a key={project.id} className="case-quick-pill" href={`#preview-${project.id}`}>
-              <span className="case-quick-pill-left">
-                <span className="case-quick-num">{project.number}</span>
-                <span className="case-quick-title">{project.title}</span>
-              </span>
-              <ArrowDown size={14} color="var(--muted)" aria-hidden="true" />
-            </a>
-          ))}
-        </nav>
+        {isMobile ? (
+          <MobileCaseCarousel onPreview={(project) => setPreviewProject(project)} />
+        ) : (
+          <>
+            <nav className="case-quick-nav" aria-label="快速定位案例">
+              {projects.map((project) => (
+                <a key={project.id} className="case-quick-pill" href={`#preview-${project.id}`}>
+                  <span className="case-quick-pill-left">
+                    <span className="case-quick-num">{project.number}</span>
+                    <span className="case-quick-title">{project.title}</span>
+                  </span>
+                  <ArrowDown size={14} color="var(--muted)" aria-hidden="true" />
+                </a>
+              ))}
+            </nav>
 
-        <div className="case-list">
-          {projects.map((project) => (
-            <ProjectRow
-              project={project}
-              key={project.id}
-              onPreview={() => setPreviewProject(project)}
-            />
-          ))}
-        </div>
+            <div className="case-list">
+              {projects.map((project) => (
+                <ProjectRow
+                  project={project}
+                  key={project.id}
+                  onPreview={() => setPreviewProject(project)}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         <div className="archive-teaser">
           <div>
-            <strong>更多实战与自动化案例（+{archiveCases.length} 个）</strong>
-            <p>涵盖 RPA 订单管线、评论洞察看板、竞品监控、企业 AI SOP 与轻量助手矩阵，持续更新。</p>
+            <strong>更多实战与自动化案例（+{archiveCases.length} 个独立页）</strong>
+            <p>涵盖 RPA 订单管线、评论洞察看板、竞品监控、企业 AI SOP 与轻量助手矩阵，独立成页清爽浏览。</p>
           </div>
-          <a className="button-primary" href={portfolioPath}>
-            进入完整案例集 <ArrowRight size={15} />
+          <a className="button-primary" href={archivePath}>
+            进入实战案例库 <ArrowRight size={15} />
           </a>
         </div>
         {previewProject && <CaseDialog project={previewProject} onClose={() => setPreviewProject(null)} />}
@@ -371,13 +697,166 @@ function ProjectsSection() {
 }
 
 const methodItems = [
-  ['01', '先看现场卡在哪', '先摸清人工耗时、数据来源和不能交给 AI 乱答的边界，不为加 AI 而加。', '例：医疗客服先切分常规咨询与高风险诊疗，再定转人工界线。'],
-  ['02', '接进现有工具', '围绕已有 API、表格和文档建好数据表，让流程直接跑在团队日常工具里。', '例：周报平台直连企微，拆出员工、部门、原文、事项 4 张表。'],
-  ['03', '规则和模型分工', '硬条件交给代码规则，模糊语义交给大模型，拿不准的一律进待确认。', '例：选校先用规则筛硬门槛，开放专业表述再交人工看成绩单。'],
-  ['04', '留痕可追溯、能回归', '每条结果保留来源与状态，用真实样本跑自动化回归，确保长期稳定。', '例：高校选校全链路通过 37 项自动化回归与脏数据拦截。'],
+  ['01', '先看现场卡在哪', '先摸清人工耗时、数据来源和不能交给 AI 乱答的边界，不为加 AI 而加。', '例：医疗客服先切分常规咨询与高风险诊疗，再定转人工界线。', '摸清耗时与不能乱答的边界'],
+  ['02', '接进现有工具', '围绕已有 API、表格和文档建好数据表，让流程直接跑在团队日常工具里。', '例：周报平台直连企微，拆出员工、部门、原文、事项 4 张表。', '跑在日常 API 与表格里'],
+  ['03', '规则和模型分工', '硬条件交给代码规则，模糊语义交给大模型，拿不准的一律进待确认。', '例：选校先用规则筛硬门槛，开放专业表述再交人工看成绩单。', '硬条件归规则，模糊归模型'],
+  ['04', '留痕可追溯、能回归', '每条结果保留来源与状态，用真实样本跑自动化回归，确保长期稳定。', '例：高校选校全链路通过 37 项自动化回归与脏数据拦截。', '保留来源并跑样本回归'],
 ];
 
+function MethodAxisList({ openIndex, setOpenIndex }) {
+  const reduced = useReducedMotion();
+  const listRef = useRef(null);
+  const itemRefs = useRef([]);
+  const [railMetrics, setRailMetrics] = useState({
+    top: 21,
+    height: 0,
+    thresholds: methodItems.map((_, index) => (index === 0 ? 0.02 : index / (methodItems.length - 1))),
+  });
+  const [litCount, setLitCount] = useState(reduced ? methodItems.length : 0);
+
+  const { scrollYProgress } = useScroll({
+    target: listRef,
+    offset: ['start 80%', 'end 64%'],
+  });
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 130,
+    damping: 24,
+    mass: 0.35,
+  });
+  const sparkY = useTransform(smoothProgress, (v) => v * railMetrics.height);
+  const sparkOpacity = useTransform(smoothProgress, [0, 0.03, 0.97, 1], [0, 1, 1, 0]);
+
+  useEffect(() => {
+    const measure = () => {
+      const listEl = listRef.current;
+      if (!listEl) return;
+      const centers = methodItems.map((_, index) => {
+        const itemEl = itemRefs.current[index];
+        if (!itemEl) return 0;
+        const triggerEl = itemEl.querySelector('.method-axis-trigger');
+        const nodeOffset = triggerEl ? triggerEl.offsetHeight / 2 : 21;
+        return itemEl.offsetTop + nodeOffset;
+      });
+      const firstCenter = centers[0] || 21;
+      const lastCenter = centers[centers.length - 1] || firstCenter;
+      const span = Math.max(1, lastCenter - firstCenter);
+      const thresholds = centers.map((center, index) => {
+        if (index === 0) return 0.02;
+        if (index === centers.length - 1) return 0.96;
+        return Math.min(0.95, Math.max(0.05, (center - firstCenter) / span));
+      });
+      setRailMetrics({ top: firstCenter, height: span, thresholds });
+    };
+
+    const rafId = window.requestAnimationFrame(measure);
+    window.addEventListener('resize', measure);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', measure);
+    };
+  }, [openIndex]);
+
+  useEffect(() => {
+    if (reduced) {
+      setLitCount(methodItems.length);
+      return;
+    }
+    const current = smoothProgress.get();
+    let nextLit = 0;
+    for (let i = 0; i < railMetrics.thresholds.length; i += 1) {
+      if (current >= railMetrics.thresholds[i]) {
+        nextLit = i + 1;
+      }
+    }
+    setLitCount((prev) => (prev === nextLit ? prev : nextLit));
+  }, [reduced, railMetrics.thresholds, smoothProgress]);
+
+  useMotionValueEvent(smoothProgress, 'change', (latest) => {
+    if (reduced) return;
+    let nextLit = 0;
+    for (let i = 0; i < railMetrics.thresholds.length; i += 1) {
+      if (latest >= railMetrics.thresholds[i]) {
+        nextLit = i + 1;
+      }
+    }
+    setLitCount((prev) => (prev === nextLit ? prev : nextLit));
+  });
+
+  const activeHeadIndex = litCount > 0 ? litCount - 1 : -1;
+
+  return (
+    <ol className="method-axis-list" ref={listRef}>
+      <span
+        className="method-axis-rail"
+        aria-hidden="true"
+        style={railMetrics.height > 0 ? { top: `${railMetrics.top}px`, height: `${railMetrics.height}px` } : undefined}
+      >
+        <motion.span
+          className="method-axis-rail-fill"
+          style={{
+            scaleY: reduced ? 1 : smoothProgress,
+          }}
+        />
+        {!reduced && railMetrics.height > 0 && (
+          <motion.span
+            className="method-axis-rail-spark"
+            style={{
+              y: sparkY,
+              opacity: sparkOpacity,
+            }}
+          />
+        )}
+      </span>
+      {methodItems.map(([number, title, desc, example, shortHint], index) => {
+        const isOpen = openIndex === index;
+        const isLit = reduced || index < litCount;
+        const isActiveHead = !reduced && index === activeHeadIndex;
+        const itemClass = [
+          'method-axis-item',
+          isOpen ? 'open' : '',
+          isLit ? 'is-lit' : '',
+          isActiveHead ? 'is-active-head' : '',
+        ].filter(Boolean).join(' ');
+
+        return (
+          <li
+            className={itemClass}
+            key={number}
+            ref={(el) => { itemRefs.current[index] = el; }}
+          >
+            <span className="method-axis-node" aria-hidden="true">
+              <span className="method-axis-node-core" />
+            </span>
+            <button
+              type="button"
+              className="method-axis-trigger"
+              aria-expanded={isOpen}
+              onClick={() => setOpenIndex(isOpen ? -1 : index)}
+            >
+              <span className="method-axis-left">
+                <span className="method-number">{number}</span>
+                <strong>{title}</strong>
+                {!isOpen && <em className="method-axis-hint">· {shortHint}</em>}
+              </span>
+              <ChevronDown size={15} className="method-axis-chevron" aria-hidden="true" />
+            </button>
+            {isOpen && (
+              <div className="method-axis-body">
+                <p>{desc}</p>
+                <div className="method-axis-example">{example}</div>
+              </div>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 function ApproachSection() {
+  const isMobile = useIsMobile();
+  const [openIndex, setOpenIndex] = useState(0);
+
   return (
     <section className="approach-section" id="approach">
       <div className="page-width">
@@ -386,16 +865,20 @@ function ApproachSection() {
           title="从现场问题 到可复核的系统交付"
           intro="每次 AI 落地都遵循同一条原则：先把确定性框死，再释放模型能力。"
         />
-        <ol className="method-list">
-          {methodItems.map(([number, title, desc, example]) => (
-            <li className="method-item" key={number}>
-              <span className="method-number">{number}</span>
-              <h3>{title}</h3>
-              <p>{desc}</p>
-              <p className="method-example">{example}</p>
-            </li>
-          ))}
-        </ol>
+        {isMobile ? (
+          <MethodAxisList openIndex={openIndex} setOpenIndex={setOpenIndex} />
+        ) : (
+          <ol className="method-list">
+            {methodItems.map(([number, title, desc, example]) => (
+              <li className="method-item" key={number}>
+                <span className="method-number">{number}</span>
+                <h3>{title}</h3>
+                <p>{desc}</p>
+                <p className="method-example">{example}</p>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
     </section>
   );
@@ -407,7 +890,86 @@ const skills = [
   ['前端与交付', 'React · Next.js · TypeScript · Docker · Nginx · Git'],
 ];
 
+const mobileExperienceShorts = [
+  '华太西就教育科技',
+  '锦囊妙计（SOP 复用 +60% / 轻量助手）',
+];
+
 function ExperienceSection() {
+  const isMobile = useIsMobile();
+  const [openExpIndex, setOpenExpIndex] = useState(0);
+  const [expandedSkill, setExpandedSkill] = useState(null);
+
+  if (isMobile) {
+    return (
+      <section className="experience-section page-width" id="experience">
+        <div className="experience-mobile-wrap">
+          <p className="section-label">Track Record</p>
+          <ParticleTitle as="h2" variant="section" text="履历背书与技术底座" />
+
+          <div className="profile-dark-card">
+            <span className="profile-dark-badge">
+              <Sparkles size={12} aria-hidden="true" />
+              {profileSummary.badge}
+            </span>
+            <p className="profile-dark-headline">{profileSummary.headline}</p>
+            <p className="profile-dark-body">{profileSummary.body}</p>
+          </div>
+
+          <ol className="exp-accordion-list">
+            {experience.map((item, idx) => {
+              const isOpen = openExpIndex === idx;
+              const compactPeriod = item.period.replace(/20(\d\d)\./g, '20$1.').replace(' — 2026.', '–').replace(' — 2025.', '–');
+              return (
+                <li className={`exp-accordion-item${isOpen ? ' open' : ''}`} key={item.company}>
+                  <button
+                    type="button"
+                    className="exp-accordion-trigger"
+                    aria-expanded={isOpen}
+                    onClick={() => setOpenExpIndex(isOpen ? -1 : idx)}
+                  >
+                    <div className="exp-accordion-main">
+                      <h3>{item.title}</h3>
+                      <span className="exp-accordion-co">{isOpen ? item.company : mobileExperienceShorts[idx] ?? item.company}</span>
+                    </div>
+                    <div className="exp-accordion-right">
+                      <time>{compactPeriod}</time>
+                      <ChevronDown size={15} className="exp-accordion-chevron" aria-hidden="true" />
+                    </div>
+                  </button>
+                  {isOpen && (
+                    <ul className="experience-highlights exp-accordion-body">
+                      {item.highlights.map((point) => <li key={point}>{point}</li>)}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+
+          <dl className="skill-compact-list">
+            {skills.map(([group, items]) => {
+              const isExpanded = expandedSkill === group;
+              return (
+                <div
+                  key={group}
+                  className={`skill-compact-row${isExpanded ? ' expanded' : ''}`}
+                  onClick={() => setExpandedSkill(isExpanded ? null : group)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedSkill(isExpanded ? null : group); } }}
+                >
+                  <dt>{group}</dt>
+                  <dd>{items}</dd>
+                </div>
+              );
+            })}
+          </dl>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="experience-section page-width" id="experience">
       <div className="experience-intro">
@@ -674,6 +1236,7 @@ function ArchiveCaseCard({ item }) {
 }
 
 function PortfolioPage() {
+  const isMobile = useIsMobile();
   const [category, setCategory] = useState('all');
   const [activeDialogProject, setActiveDialogProject] = useState(null);
 
@@ -697,7 +1260,7 @@ function PortfolioPage() {
     ? archiveCases
     : archiveCases.filter((item) => item.categoryKey === category);
 
-  const totalCount = projects.length + archiveCases.length;
+  const totalCount = isMobile ? projects.length : projects.length + archiveCases.length;
 
   return (
     <>
@@ -707,32 +1270,36 @@ function PortfolioPage() {
           <div className="page-width portfolio-hero-row">
             <div>
               <a className="back-link-compact" href="index.html"><ArrowLeft size={14} /> 返回首页</a>
-              <ParticleTitle as="h1" variant="section" text="项目案例集" />
+              <ParticleTitle as="h1" variant="section" text={isMobile ? '核心旗舰案例' : '项目案例集'} />
               <p className="portfolio-sub">
-                3 个旗舰深度交付案例 + {archiveCases.length} 个轻量业务与自动化案例，按业务场景持续扩充。
+                {isMobile
+                  ? '3 个深度交付旗舰案例的架构与交互演示；更多 12 个实战与自动化案例已独立成页。'
+                  : `3 个旗舰深度交付案例 + ${archiveCases.length} 个轻量业务与自动化案例，按业务场景持续扩充。`}
               </p>
             </div>
-            <div className="portfolio-filter-bar" role="tablist" aria-label="案例分类筛选">
-              {caseCategories.map((cat) => {
-                const count = cat.key === 'all'
-                  ? totalCount
-                  : projects.filter((p) => flagshipCategoryMap[p.id] === cat.key).length
-                    + archiveCases.filter((a) => a.categoryKey === cat.key).length;
-                return (
-                  <button
-                    key={cat.key}
-                    type="button"
-                    role="tab"
-                    aria-selected={category === cat.key}
-                    className={`filter-pill${category === cat.key ? ' active' : ''}`}
-                    onClick={() => setCategory(cat.key)}
-                  >
-                    <span>{cat.label}</span>
-                    <em>{count}</em>
-                  </button>
-                );
-              })}
-            </div>
+            {!isMobile && (
+              <div className="portfolio-filter-bar" role="tablist" aria-label="案例分类筛选">
+                {caseCategories.map((cat) => {
+                  const count = cat.key === 'all'
+                    ? totalCount
+                    : projects.filter((p) => flagshipCategoryMap[p.id] === cat.key).length
+                      + archiveCases.filter((a) => a.categoryKey === cat.key).length;
+                  return (
+                    <button
+                      key={cat.key}
+                      type="button"
+                      role="tab"
+                      aria-selected={category === cat.key}
+                      className={`filter-pill${category === cat.key ? ' active' : ''}`}
+                      onClick={() => setCategory(cat.key)}
+                    >
+                      <span>{cat.label}</span>
+                      <em>{count}</em>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
 
@@ -754,25 +1321,110 @@ function PortfolioPage() {
           </section>
         )}
 
-        {filteredArchives.length > 0 && (
-          <section className="portfolio-section portfolio-archive-band" id="archive-cases">
-            <div className="page-width">
-              <div className="portfolio-section-bar">
-                <span className="section-label" style={{ margin: 0 }}>More Projects & Archive</span>
-                <h2>更多实战与扩展案例（{filteredArchives.length}）</h2>
+        {isMobile ? (
+          <section className="portfolio-section page-width">
+            <div className="archive-teaser" style={{ marginTop: 0 }}>
+              <div>
+                <strong>更多实战与自动化案例（+{archiveCases.length} 个独立页）</strong>
+                <p>涵盖 RPA 订单管线、评论洞察看板、竞品监控、企业 AI SOP 与轻量助手矩阵，独立成页清爽浏览。</p>
               </div>
-              <div className="archive-grid">
-                {filteredArchives.map((item) => (
-                  <ArchiveCaseCard key={item.id} item={item} />
-                ))}
-              </div>
+              <a className="button-primary" href={archivePath}>
+                进入实战案例库 <ArrowRight size={15} />
+              </a>
             </div>
           </section>
+        ) : (
+          filteredArchives.length > 0 && (
+            <section className="portfolio-section portfolio-archive-band" id="archive-cases">
+              <div className="page-width">
+                <div className="portfolio-section-bar">
+                  <span className="section-label" style={{ margin: 0 }}>More Projects & Archive</span>
+                  <h2>更多实战与扩展案例（{filteredArchives.length}）</h2>
+                </div>
+                <div className="archive-grid">
+                  {filteredArchives.map((item) => (
+                    <ArchiveCaseCard key={item.id} item={item} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )
         )}
 
         {activeDialogProject && (
           <CaseDialog project={activeDialogProject} onClose={() => setActiveDialogProject(null)} />
         )}
+        <ContactSection />
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+function ArchivePage() {
+  const [category, setCategory] = useState('all');
+
+  useEffect(() => {
+    document.title = '更多实战与自动化案例 — 游丰奕';
+  }, []);
+
+  const filteredArchives = category === 'all'
+    ? archiveCases
+    : archiveCases.filter((item) => item.categoryKey === category);
+
+  return (
+    <>
+      <Header archivePage />
+      <main className="portfolio-main">
+        <section className="portfolio-hero-compact" id="home">
+          <div className="page-width portfolio-hero-row">
+            <div>
+              <div className="archive-nav-links">
+                <a className="back-link-compact" href="index.html"><ArrowLeft size={14} /> 返回首页</a>
+                <a className="back-link-compact" href={portfolioPath}>查看 3 个旗舰案例 <ArrowUpRight size={14} /></a>
+              </div>
+              <ParticleTitle as="h1" variant="section" text="更多实战与自动化案例" />
+              <p className="portfolio-sub">
+                共 {archiveCases.length} 个轻量业务与自动化落地案例，按场景分类筛选，点击每张卡片可展开「之前 / 现在」对比详情。
+              </p>
+            </div>
+            <div className="portfolio-filter-bar" role="tablist" aria-label="实战案例分类筛选">
+              {caseCategories.map((cat) => {
+                const count = cat.key === 'all'
+                  ? archiveCases.length
+                  : archiveCases.filter((a) => a.categoryKey === cat.key).length;
+                return (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={category === cat.key}
+                    className={`filter-pill${category === cat.key ? ' active' : ''}`}
+                    onClick={() => setCategory(cat.key)}
+                  >
+                    <span>{cat.label}</span>
+                    <em>{count}</em>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="portfolio-section portfolio-archive-band" id="archive-cases">
+          <div className="page-width">
+            <div className="portfolio-section-bar">
+              <span className="section-label" style={{ margin: 0 }}>Practice Archive</span>
+              <h2>实战与自动化案例（{filteredArchives.length}）</h2>
+            </div>
+            <div className="archive-grid">
+              {filteredArchives.map((item) => (
+                <ArchiveCaseCard key={item.id} item={item} />
+              ))}
+            </div>
+          </div>
+        </section>
+
         <ContactSection />
       </main>
       <Footer />
@@ -789,10 +1441,10 @@ function ReadingProgress() {
 
 function App() {
   return (
-    <div className={isProjectPage ? 'app project-app' : 'app'}>
+    <div className={isProjectPage || isArchivePage ? 'app project-app' : 'app'}>
       <div className="screen-site">
         <ReadingProgress />
-        {isProjectPage ? <PortfolioPage /> : <HomePage />}
+        {isArchivePage ? <ArchivePage /> : isProjectPage ? <PortfolioPage /> : <HomePage />}
       </div>
       <ResumeDocument />
     </div>

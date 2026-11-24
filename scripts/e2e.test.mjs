@@ -388,6 +388,7 @@ async function runE2E() {
     await openPage(`${BASE_URL}/index.html`, 390, 844);
     const homeMobile = await cdp.eval(`(async () => {
       const overflow = document.documentElement.scrollWidth - window.innerWidth;
+      const totalHeight = document.body.scrollHeight;
       const menuBtn = document.querySelector('.menu-toggle');
       menuBtn.click();
       await new Promise(r => setTimeout(r, 80));
@@ -395,23 +396,177 @@ async function runE2E() {
       menuBtn.click();
       await new Promise(r => setTimeout(r, 80));
       const navClosed = !document.querySelector('#primary-navigation').classList.contains('open');
-      return { overflow, navOpen, navClosed };
+
+      // 1. 首屏方案 C：透明无框人物 + 1+2 Bento 战绩宫格
+      const cutoutEl = document.querySelector('.m-hero-portrait-cutout');
+      const cutoutStyle = cutoutEl ? getComputedStyle(cutoutEl) : null;
+      const cutoutTransparent = !!cutoutStyle && cutoutStyle.backgroundColor === 'rgba(0, 0, 0, 0)' && cutoutStyle.borderTopWidth === '0px';
+      const bentoCards = document.querySelectorAll('.m-hero-bento > a').length;
+      const bentoMetricsSingleLine = [...document.querySelectorAll('.m-hero-bento strong')].every(
+        (el) => Math.round(el.getBoundingClientRect().height) <= 32
+      );
+
+      // 2. 核心案例自动轮播 + 点击胶囊切卡 + 细节抽屉 + 打开工作流弹窗
+      const carousel = document.querySelector('.mobile-case-carousel');
+      const pills = [...document.querySelectorAll('.mobile-carousel-pill')];
+      let switchedToSecond = false;
+      if (pills[1]) {
+        pills[1].click();
+        await new Promise(r => setTimeout(r, 150));
+        switchedToSecond = pills[1].classList.contains('active');
+      }
+      const firstDrawerBtn = document.querySelector('.m-case-drawer-btn');
+      firstDrawerBtn?.click();
+      await new Promise(r => setTimeout(r, 80));
+      const drawerOpened = !!document.querySelector('.m-case-drawer-body');
+      firstDrawerBtn?.click();
+      await new Promise(r => setTimeout(r, 60));
+
+      // 3. 工作方法工程轴（默认展开第1步，点第2步可切换）
+      const axisTriggers = [...document.querySelectorAll('.method-axis-trigger')];
+      const axisInitialOpen = document.querySelectorAll('.method-axis-item.open').length === 1;
+      axisTriggers[1]?.click();
+      await new Promise(r => setTimeout(r, 60));
+      const axisSwitched = document.querySelectorAll('.method-axis-item')[1]?.classList.contains('open');
+
+      // 4. 履历深色定位卡 + 手风琴经历 + 速览技能
+      const hasProfileDarkCard = !!document.querySelector('.profile-dark-card');
+      const expTriggers = [...document.querySelectorAll('.exp-accordion-trigger')];
+      expTriggers[1]?.click();
+      await new Promise(r => setTimeout(r, 60));
+      const expSwitched = document.querySelectorAll('.exp-accordion-item')[1]?.classList.contains('open');
+      const skillRows = document.querySelectorAll('.skill-compact-row').length;
+
+      const sectionCanvases = [...document.querySelectorAll('.particle-title-section .particle-title-canvas')].map(c => {
+        const r = c.getBoundingClientRect();
+        return { w: Math.round(r.width), h: Math.round(r.height) };
+      });
+
+      const contactSameRow = [...document.querySelectorAll('.contact-list > div')].every(row => {
+        const dt = row.querySelector('dt')?.getBoundingClientRect();
+        const dd = row.querySelector('dd')?.getBoundingClientRect();
+        return dt && dd && Math.abs(dt.top - dd.top) < 16;
+      });
+
+      return {
+        overflow,
+        totalHeight,
+        navOpen,
+        navClosed,
+        cutoutTransparent,
+        bentoCards,
+        bentoMetricsSingleLine,
+        hasCarousel: !!carousel,
+        pillCount: pills.length,
+        switchedToSecond,
+        drawerOpened,
+        axisInitialOpen,
+        axisSwitched,
+        hasProfileDarkCard,
+        expSwitched,
+        skillRows,
+        sectionCanvases,
+        contactSameRow,
+      };
     })()`);
 
     if (homeMobile.overflow > 1) logBug(`首页移动端(390px)存在水平溢出: +${homeMobile.overflow}px`);
-    else logPass('首页移动端(390px)无水平溢出');
+    else logPass(`首页移动端(390px)无水平溢出，总高度瘦身至 ${homeMobile.totalHeight}px (${(homeMobile.totalHeight / 844).toFixed(1)} 屏)`);
+    if (homeMobile.totalHeight > 4200) logBug(`首页移动端仍过长: ${homeMobile.totalHeight}px`);
     if (!homeMobile.navOpen || !homeMobile.navClosed) logBug(`首页移动端导航菜单开关异常: ${JSON.stringify(homeMobile)}`);
     else logPass('首页移动端导航菜单开关正常');
 
+    if (!homeMobile.cutoutTransparent || homeMobile.bentoCards !== 3 || !homeMobile.bentoMetricsSingleLine) {
+      logBug(`首页移动端方案 C 首屏人物透明或 Bento 宫格异常: ${JSON.stringify({ cutoutTransparent: homeMobile.cutoutTransparent, bentoCards: homeMobile.bentoCards, bentoMetricsSingleLine: homeMobile.bentoMetricsSingleLine })}`);
+    } else {
+      logPass('首页移动端方案 C：右上角透明无框人物 + 1+2 Bento 战绩宫格正常');
+    }
+
+    if (!homeMobile.hasCarousel || homeMobile.pillCount !== 3 || !homeMobile.switchedToSecond || !homeMobile.drawerOpened) {
+      logBug(`移动端核心案例自动轮播或细节抽屉异常: ${JSON.stringify({ hasCarousel: homeMobile.hasCarousel, pillCount: homeMobile.pillCount, switchedToSecond: homeMobile.switchedToSecond, drawerOpened: homeMobile.drawerOpened })}`);
+    } else {
+      logPass('首页移动端核心案例自动轮播、胶囊切卡与交付细节抽屉均正常');
+    }
+
+    if (!homeMobile.axisInitialOpen || !homeMobile.axisSwitched) logBug('移动端工作方法左侧工程轴展开切换异常');
+    else logPass('首页移动端工作方法左侧工程轴（样式 C）展开切换正常');
+
+    if (!homeMobile.hasProfileDarkCard || !homeMobile.expSwitched || homeMobile.skillRows !== 3) {
+      logBug(`移动端履历深色定位卡/手风琴/技能行异常: ${JSON.stringify({ hasProfileDarkCard: homeMobile.hasProfileDarkCard, expSwitched: homeMobile.expSwitched, skillRows: homeMobile.skillRows })}`);
+    } else {
+      logPass('首页移动端履历深色定位卡 + 手风琴经历 + 3 行速览技能（样式 B）正常');
+    }
+
+    if (homeMobile.sectionCanvases.some((c) => c.w === 0 || c.h === 0)) logBug(`移动端存在零尺寸粒子画布: ${JSON.stringify(homeMobile.sectionCanvases)}`);
+    else logPass(`首页移动端章节粒子标题画布正常 (${homeMobile.sectionCanvases.map((c) => `${c.w}x${c.h}`).join(', ')})`);
+
+    if (!homeMobile.contactSameRow) logBug('移动端联系卡标签与内容未同行对齐');
+    else logPass('首页移动端联系卡标签与联系方式同行对齐');
+
     await openPage(`${BASE_URL}/portfolio.html`, 390, 844);
-    const portfolioMobile = await cdp.eval(`(() => ({
-      overflow: document.documentElement.scrollWidth - window.innerWidth,
-      flagshipCount: document.querySelectorAll('.flagship-card').length,
-      archiveCount: document.querySelectorAll('.archive-card').length,
-    }))()`);
+    const portfolioMobile = await cdp.eval(`(() => {
+      const overflow = document.documentElement.scrollWidth - window.innerWidth;
+      const sectionHeadingWrapped = [...document.querySelectorAll('.portfolio-section-bar h2')].map(h2 => ({
+        text: h2.textContent,
+        height: Math.round(h2.getBoundingClientRect().height),
+      })).filter(x => x.height > 32);
+      const hiddenFlowSeps = [...document.querySelectorAll('.flagship-workflow-bar .workflow-step-sep')]
+        .every(el => getComputedStyle(el).display === 'none');
+      const hasArchiveLink = !!document.querySelector('a[href="archive.html"]');
+      return {
+        overflow,
+        totalHeight: document.body.scrollHeight,
+        flagshipCount: document.querySelectorAll('.flagship-card').length,
+        archiveCount: document.querySelectorAll('.archive-card').length,
+        sectionHeadingWrapped,
+        hiddenFlowSeps,
+        hasArchiveLink,
+      };
+    })()`);
 
     if (portfolioMobile.overflow > 1) logBug(`案例集页移动端(390px)存在水平溢出: +${portfolioMobile.overflow}px`);
-    else logPass('案例集页移动端(390px)无水平溢出');
+    else logPass(`案例集页移动端(390px)无水平溢出，聚焦 3 个旗舰案例 (${portfolioMobile.totalHeight}px)`);
+
+    if (portfolioMobile.archiveCount !== 0 || !portfolioMobile.hasArchiveLink) {
+      logBug(`案例集页移动端未将 12 个扩展案例剥离至独立页: archiveCount=${portfolioMobile.archiveCount}, hasArchiveLink=${portfolioMobile.hasArchiveLink}`);
+    } else {
+      logPass('案例集页移动端已剥离扩展案例并提供直达 archive.html 入口');
+    }
+
+    if (portfolioMobile.sectionHeadingWrapped.length) {
+      logBug(`案例集页移动端区块标题发生挤压折行: ${JSON.stringify(portfolioMobile.sectionHeadingWrapped)}`);
+    } else {
+      logPass('案例集页移动端区块标题均完整单行展示');
+    }
+
+    if (!portfolioMobile.hiddenFlowSeps) logBug('案例集页移动端旗舰流程条未隐藏悬空箭头');
+    else logPass('案例集页移动端旗舰流程条采用规整 3 列网格');
+
+    // ==================== 3.2 独立扩展案例页 archive.html (390x844) ====================
+    await openPage(`${BASE_URL}/archive.html`, 390, 844);
+    const archiveMobile = await cdp.eval(`(async () => {
+      const overflow = document.documentElement.scrollWidth - window.innerWidth;
+      const totalCards = document.querySelectorAll('.archive-card').length;
+      const firstMore = document.querySelector('.archive-card .archive-card-more');
+      firstMore?.click();
+      await new Promise(r => setTimeout(r, 80));
+      const detailExpanded = document.querySelectorAll('.archive-card .archive-detail-row').length === 2;
+      // 点击第二个分类筛选验证过滤正常
+      const filterBtns = [...document.querySelectorAll('.portfolio-filter-bar button')];
+      filterBtns[1]?.click();
+      await new Promise(r => setTimeout(r, 60));
+      const expected = Number(filterBtns[1]?.querySelector('em')?.textContent || 0);
+      const actual = document.querySelectorAll('.archive-card').length;
+      return { overflow, totalCards, detailExpanded, filterMatched: expected === actual && actual > 0 };
+    })()`);
+
+    if (archiveMobile.overflow > 1) logBug(`独立扩展案例页 archive.html 移动端存在水平溢出: +${archiveMobile.overflow}px`);
+    else logPass(`独立扩展案例页 archive.html 移动端无水平溢出 (${archiveMobile.totalCards} 个案例)`);
+    if (archiveMobile.totalCards !== 12 || !archiveMobile.detailExpanded || !archiveMobile.filterMatched) {
+      logBug(`独立扩展案例页 archive.html 渲染或筛选异常: ${JSON.stringify(archiveMobile)}`);
+    } else {
+      logPass('独立扩展案例页 archive.html 12 个案例、详情展开与分类筛选均正常');
+    }
 
     // ==================== 3.5 Hash 锚点直达案例集页 + chatbot-demo.html 校验 ====================
     await openPage(`${BASE_URL}/portfolio.html#university-agent`, 1440, 900);
