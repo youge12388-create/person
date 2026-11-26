@@ -688,7 +688,49 @@ img, svg { display: block; }
   font-size: 11.5px;
   font-weight: 600;
 }
-.case-row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 24px; }
+.case-row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 20px; }
+
+.quick-try-bar {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  border: 1px dashed var(--accent-border);
+  background: #f7faff;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.quick-try-bar.compact {
+  margin-top: 4px;
+  padding: 8px 10px;
+}
+.quick-try-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-ink);
+}
+.quick-try-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.quick-try-pill {
+  min-height: 29px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.quick-try-pill:hover {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
 
 /* 工作方法：克制四栏结构 */
 .approach-section {

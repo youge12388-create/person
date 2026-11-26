@@ -300,7 +300,13 @@ function Hero() {
 function ProjectRow({ project, onPreview }) {
   const demo = caseDemos[project.id];
   const reduced = useReducedMotion();
-  const [mode, setMode] = useState('overview');
+  const [mode, setMode] = useState(() => (project.id === 'weekly-intelligence' ? 'workflow' : 'overview'));
+  const [activePreset, setActivePreset] = useState(null);
+
+  const launchPreset = (presetKey) => {
+    setActivePreset({ key: presetKey, nonce: Date.now() });
+    setMode('workflow');
+  };
 
   return (
     <motion.article
@@ -336,7 +342,7 @@ function ProjectRow({ project, onPreview }) {
             className={`case-view-tab${mode === 'workflow' ? ' active' : ''}`}
             onClick={() => setMode('workflow')}
           >
-            <Play size={13} /> 交互工作流
+            <Play size={13} /> 交互工作台
           </button>
         </div>
       </header>
@@ -367,11 +373,11 @@ function ProjectRow({ project, onPreview }) {
       </div>
 
       {mode === 'workflow' ? (
-        <CaseExperience project={project} />
+        <CaseExperience project={project} activePreset={activePreset} />
       ) : (
         <div className="case-row-grid">
           <div className="case-row-visual">
-            <CaseVisual project={project} onOpen={onPreview} />
+            <CaseVisual project={project} onOpen={() => onPreview(project, null)} />
           </div>
           <div className="case-row-detail">
             <ul className="case-row-deliverables">
@@ -386,13 +392,30 @@ function ProjectRow({ project, onPreview }) {
                 </dd>
               </div>
             </dl>
+            {demo.quickTryPresets && (
+              <div className="quick-try-bar" aria-label="一键实操试玩">
+                <span className="quick-try-label">直接试玩沙盒：</span>
+                <div className="quick-try-pills">
+                  {demo.quickTryPresets.map((preset) => (
+                    <button
+                      key={preset.key}
+                      type="button"
+                      className="quick-try-pill"
+                      onClick={() => launchPreset(preset.key)}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="case-row-actions">
-              <a className="button-primary" href={`${portfolioPath}#${project.id}`}>
+              <button type="button" className="button-primary" onClick={() => setMode('workflow')}>
+                <Play size={14} /> 打开交互工作台
+              </button>
+              <a className="button-link" href={`${portfolioPath}#${project.id}`}>
                 阅读完整案例 <ArrowUpRight size={15} />
               </a>
-              <button type="button" className="button-link" onClick={() => setMode('workflow')}>
-                直接体验工作流 <ArrowRight size={15} />
-              </button>
             </div>
           </div>
         </div>
@@ -540,14 +563,14 @@ function MobileCaseCarousel({ onPreview }) {
               <button
                 type="button"
                 className="m-case-visual"
-                aria-label={`体验${project.title}交互工作流`}
+                aria-label={`体验${project.title}交互工作台`}
                 onClick={() => {
                   pauseTemporarily(15000);
-                  onPreview(project);
+                  onPreview(project, null);
                 }}
               >
                 <img src={demo.image} alt={demo.imageAlt} loading="lazy" width="1536" height="1024" />
-                <span className="m-case-visual-badge"><Play size={12} /> 体验交互工作流</span>
+                <span className="m-case-visual-badge"><Play size={12} /> 实操交互沙盒</span>
               </button>
 
               <div className="m-case-compare">
@@ -591,10 +614,10 @@ function MobileCaseCarousel({ onPreview }) {
                   className="button-primary"
                   onClick={() => {
                     pauseTemporarily(15000);
-                    onPreview(project);
+                    onPreview(project, null);
                   }}
                 >
-                  <Play size={13} /> 交互工作流
+                  <Play size={13} /> 交互工作台
                 </button>
                 <a className="button-secondary" href={`${portfolioPath}#${project.id}`}>
                   完整案例 <ArrowUpRight size={14} />
@@ -638,8 +661,15 @@ function MobileCaseCarousel({ onPreview }) {
 }
 
 function ProjectsSection() {
-  const [previewProject, setPreviewProject] = useState(null);
+  const [previewState, setPreviewState] = useState(null);
   const isMobile = useIsMobile();
+
+  const openPreview = (project, presetKey = null) => {
+    setPreviewState({
+      project,
+      preset: presetKey ? { key: presetKey, nonce: Date.now() } : null,
+    });
+  };
 
   return (
     <section className="projects-section" id="projects">
@@ -648,13 +678,13 @@ function ProjectsSection() {
           label="Core Case Studies"
           title="用具体交付 证明业务优化能力"
           intro={isMobile
-            ? '左右滑动或等待自动切换 3 个旗舰案例，点开图片即可体验交互工作流。'
-            : '每个案例清晰呈现「原有痛点 → AI 流程重构 → 实际交付与交互验证」，支持直接切换体验核心工作流。'}
+            ? '左右滑动或等待自动切换 3 个旗舰案例，点开图片即可体验交互工作台。'
+            : '每个案例提供真实的交互工作台沙盒：可直接改写周报、调参选校或对话测试医疗护栏。'}
           aside={<a className="button-link" href={portfolioPath}>全部案例详情页 <ArrowRight size={16} /></a>}
         />
 
         {isMobile ? (
-          <MobileCaseCarousel onPreview={(project) => setPreviewProject(project)} />
+          <MobileCaseCarousel onPreview={(project, presetKey) => openPreview(project, presetKey)} />
         ) : (
           <>
             <nav className="case-quick-nav" aria-label="快速定位案例">
@@ -674,7 +704,7 @@ function ProjectsSection() {
                 <ProjectRow
                   project={project}
                   key={project.id}
-                  onPreview={() => setPreviewProject(project)}
+                  onPreview={openPreview}
                 />
               ))}
             </div>
@@ -690,7 +720,13 @@ function ProjectsSection() {
             进入实战案例库 <ArrowRight size={15} />
           </a>
         </div>
-        {previewProject && <CaseDialog project={previewProject} onClose={() => setPreviewProject(null)} />}
+        {previewState && (
+          <CaseDialog
+            project={previewState.project}
+            activePreset={previewState.preset}
+            onClose={() => setPreviewState(null)}
+          />
+        )}
       </div>
     </section>
   );
@@ -1093,7 +1129,7 @@ function FlagshipCaseCard({ project, onOpenDemo }) {
     <article className="flagship-card" id={project.id}>
       <div className="flagship-card-grid">
         <div className="flagship-visual">
-          <CaseVisual project={project} onOpen={onOpenDemo} />
+          <CaseVisual project={project} onOpen={() => onOpenDemo(project, null)} />
         </div>
         <div className="flagship-body">
           <div className="flagship-meta-row">
@@ -1124,13 +1160,31 @@ function FlagshipCaseCard({ project, onOpenDemo }) {
             </div>
           </div>
 
+          {demo.quickTryPresets && (
+            <div className="quick-try-bar compact" aria-label="一键实操试玩">
+              <span className="quick-try-label">试玩沙盒：</span>
+              <div className="quick-try-pills">
+                {demo.quickTryPresets.map((preset) => (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    className="quick-try-pill"
+                    onClick={() => onOpenDemo(project, preset.key)}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flagship-footer">
             <div className="stack-chips">
               {project.stack.map((tag) => <span key={tag}>{tag}</span>)}
             </div>
             <div className="flagship-actions">
-              <button type="button" className="button-primary btn-compact" onClick={onOpenDemo}>
-                <Play size={13} /> 交互工作流
+              <button type="button" className="button-primary btn-compact" onClick={() => onOpenDemo(project, null)}>
+                <Play size={13} /> 交互工作台
               </button>
               <button
                 type="button"
@@ -1238,7 +1292,14 @@ function ArchiveCaseCard({ item }) {
 function PortfolioPage() {
   const isMobile = useIsMobile();
   const [category, setCategory] = useState('all');
-  const [activeDialogProject, setActiveDialogProject] = useState(null);
+  const [activeDialogState, setActiveDialogState] = useState(null);
+
+  const openDemoDialog = (project, presetKey = null) => {
+    setActiveDialogState({
+      project,
+      preset: presetKey ? { key: presetKey, nonce: Date.now() } : null,
+    });
+  };
 
   useEffect(() => {
     document.title = '项目案例集 — 游丰奕';
@@ -1314,7 +1375,7 @@ function PortfolioPage() {
                 <FlagshipCaseCard
                   key={project.id}
                   project={project}
-                  onOpenDemo={() => setActiveDialogProject(project)}
+                  onOpenDemo={openDemoDialog}
                 />
               ))}
             </div>
@@ -1351,8 +1412,12 @@ function PortfolioPage() {
           )
         )}
 
-        {activeDialogProject && (
-          <CaseDialog project={activeDialogProject} onClose={() => setActiveDialogProject(null)} />
+        {activeDialogState && (
+          <CaseDialog
+            project={activeDialogState.project}
+            activePreset={activeDialogState.preset}
+            onClose={() => setActiveDialogState(null)}
+          />
         )}
         <ContactSection />
       </main>

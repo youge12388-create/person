@@ -214,24 +214,130 @@ async function runE2E() {
       if (!row.sameLine) logBug(`首屏背书栏指标与标题发生折行挤压: "${row.value}" / "${row.title}"`);
     }
 
-    // 测试首页案例 02 切换交互工作流并遍历 6 步 + 弹窗预览
-    const homeInteractive = await cdp.eval(`(async () => {
+    // 测试首页案例 01~03 一键试玩快捷联动 + 运行动画 + 三套真实业务闭环
+    const weeklyInteractive = await cdp.eval(`(async () => {
+      const card = document.getElementById('preview-weekly-intelligence');
+      // 01 默认直出清爽双栏驾驶舱（左：结构化事项+原文舱 | 右：周报分析 Agent 对话舱）
+      await new Promise(r => setTimeout(r, 950));
+      const defaultWorkbenchOpen = !!card.querySelector('[data-workbench="weekly"]')
+        && !!card.querySelector('.wk-left-col')
+        && !!card.querySelector('.wk-agent-col');
+
+      // 切回“交付概览”再点“⚡ 问 Agent：谁在重复造轮子”验证一键试玩联动
+      const overviewTab = [...card.querySelectorAll('button[role="tab"]')].find(b => b.textContent.includes('交付概览'));
+      overviewTab?.click();
+      await new Promise(r => setTimeout(r, 80));
+      const presetBtn = [...card.querySelectorAll('.quick-try-pill')].find(b => b.textContent.includes('重复造轮子'));
+      presetBtn?.click();
+      await new Promise(r => setTimeout(r, 1100));
+
+      const workbenchVisible = !!card.querySelector('[data-workbench="weekly"]');
+      const dupBadges = card.querySelectorAll('.wb-dup-tag').length;
+
+      // 点击第一条事项触发左下角原文舱 <mark> 高亮
+      const firstItem = card.querySelector('.wk-task-row');
+      firstItem?.click();
+      await new Promise(r => setTimeout(r, 100));
+      const markText = card.querySelector('.wk-source-dock mark')?.textContent?.trim();
+
+      // 点击卡片内“派发核实”或“合并排期”测试闭环计数更新
+      const actionBtn = card.querySelector('.wk-row-action');
+      actionBtn?.click();
+      await new Promise(r => setTimeout(r, 260));
+      const closedText = card.querySelector('.wk-closed-badge')?.textContent || '';
+      const resolvedProgressed = closedText.includes('已闭环 1') || closedText.includes('已清零');
+
+      // 在右侧周报 Agent 输入框提问未写明负责人的“数据清洗谁负责、哪天上线？”，验证零脑补拦截与流式回答
+      const chatInput = card.querySelector('.wk-chat-input');
+      const inputSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      inputSetter.call(chatInput, '客户历史数据清洗谁负责、哪天上线？');
+      chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+      card.querySelector('.wk-send-btn')?.click();
+      await new Promise(r => setTimeout(r, 1000));
+
+      const guardBubbleText = card.querySelector('.wk-guard-bubble')?.textContent || '';
+      const agentNoFabricationOk = guardBubbleText.includes('拒绝脑补') && guardBubbleText.includes('W-205');
+
+      // 切换“录入周报实测”提交含矛盾状态的新周报，验证左栏拆解标疑且右栏 Agent 自动发诊断消息
+      const editToggle = [...card.querySelectorAll('.wk-scope-tab')].find(b => b.textContent.includes('录入周报'));
+      editToggle?.click();
+      await new Promise(r => setTimeout(r, 80));
+      const textarea = card.querySelector('.wb-textarea');
+      const taSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+      taSetter.call(textarea, '研发组：结算网关已经完成。补充：结算网关回调仍有报错，尚未通过验收。');
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      card.querySelector('.wb-editor-actions .wb-btn-primary')?.click();
+      await new Promise(r => setTimeout(r, 1200));
+
+      const conflictText = card.querySelector('.wk-conflict-pill')?.textContent || '';
+      const hasConflictParsed = conflictText.includes('前后状态矛盾');
+
+      // 展开实时 JSON 数据结构面板
+      const payloadSummary = card.querySelector('.demo-payload summary');
+      payloadSummary?.click();
+      await new Promise(r => setTimeout(r, 60));
+      const payloadOpen = card.querySelector('.demo-payload')?.open === true;
+
+      return {
+        defaultWorkbenchOpen,
+        workbenchVisible,
+        dupBadges,
+        markText,
+        resolvedProgressed,
+        agentNoFabricationOk,
+        hasConflictParsed,
+        payloadOpen,
+      };
+    })()`);
+
+    if (
+      !weeklyInteractive.defaultWorkbenchOpen ||
+      !weeklyInteractive.workbenchVisible ||
+      weeklyInteractive.dupBadges < 2 ||
+      !weeklyInteractive.markText ||
+      !weeklyInteractive.resolvedProgressed ||
+      !weeklyInteractive.agentNoFabricationOk ||
+      !weeklyInteractive.hasConflictParsed ||
+      !weeklyInteractive.payloadOpen
+    ) {
+      logBug(`周报双栏驾驶舱与 Agent 对话实操异常: ${JSON.stringify(weeklyInteractive)}`);
+    } else {
+      logPass('01 周报清爽双栏驾驶舱、原文溯源高亮、异常闭环与周报 Agent 零脑补对话全部正常');
+    }
+
+    // 测试首页案例 02 高校 Agent 工作台：双阶段筛选 + 选校单生成交付报告 + PDF 终端流拦截修复 + 弹窗预览
+    const uniInteractive = await cdp.eval(`(async () => {
       const card = document.getElementById('preview-university-agent');
-      const workflowTab = [...card.querySelectorAll('button[role="tab"]')].find(b => b.textContent.includes('交互工作流'));
+      const workflowTab = [...card.querySelectorAll('button[role="tab"]')].find(b => b.textContent.includes('交互工作台'));
       workflowTab.click();
-      await new Promise(r => setTimeout(r, 150));
-      const stepBtns = [...card.querySelectorAll('.demo-step-list button')];
-      let steppedAll = stepBtns.length === 6;
-      for (const btn of stepBtns) {
-        btn.click();
-        await new Promise(r => setTimeout(r, 40));
-        const stageTitle = card.querySelector('.demo-stage-content h4')?.textContent;
-        if (!stageTitle) steppedAll = false;
-      }
-      const sourceBtn = card.querySelector('.demo-source-toggle');
-      sourceBtn.click();
-      await new Promise(r => setTimeout(r, 50));
-      const sourceVisible = !card.querySelector('.demo-source').hidden;
+      await new Promise(r => setTimeout(r, 600));
+
+      const initialMatched = card.querySelectorAll('.uni-card').length;
+      // 点击“仅限全额奖学金”硬条件开关并等待重算动画
+      const fullScholBtn = [...card.querySelectorAll('.uni-controls button')].find(b => b.textContent.includes('奖学金'));
+      fullScholBtn?.click();
+      await new Promise(r => setTimeout(r, 600));
+      const elimCount = card.querySelectorAll('.uni-elim-card').length;
+
+      // 点击第一所匹配院校展开 PDF 原文摘录
+      card.querySelector('.uni-card-btn')?.click();
+      await new Promise(r => setTimeout(r, 60));
+      const quoteOpened = !!card.querySelector('.uni-quote-box');
+
+      // 点击“生成客户交付版选校报告”验证交付报告渲染
+      card.querySelector('.uni-basket-bar .wb-btn-primary')?.click();
+      await new Promise(r => setTimeout(r, 650));
+      const reportRendered = !!card.querySelector('.uni-report-preview');
+
+      // 切换到“后台 PDF 采集与脏数据守门”模式并等待终端流跑完
+      const collectorBtn = [...card.querySelectorAll('.wb-pill')].find(b => b.textContent.includes('脏数据守门'));
+      collectorBtn?.click();
+      await new Promise(r => setTimeout(r, 750));
+      const gateBlocked = card.querySelector('.uni-gate-pill')?.textContent === 'BLOCKED';
+      card.querySelector('.uni-gate-fail .wb-btn-primary')?.click();
+      await new Promise(r => setTimeout(r, 750));
+      const gateFixedPass = card.querySelector('.uni-gate-pill')?.textContent === 'PASS';
+
       // 切回交付概览并点击预览图打开 Dialog
       const overviewTab = [...card.querySelectorAll('button[role="tab"]')].find(b => b.textContent.includes('交付概览'));
       overviewTab.click();
@@ -242,50 +348,62 @@ async function runE2E() {
       document.querySelector('dialog.case-dialog .dialog-top button')?.click();
       await new Promise(r => setTimeout(r, 100));
       const dialogClosed = !document.querySelector('dialog.case-dialog[open]');
-      return { stepCount: stepBtns.length, steppedAll, sourceVisible, dialogOpen, dialogClosed };
+
+      return { initialMatched, elimCount, quoteOpened, reportRendered, gateBlocked, gateFixedPass, dialogOpen, dialogClosed };
     })()`);
 
-    if (!homeInteractive.steppedAll || !homeInteractive.sourceVisible) logBug(`首页交互工作流沙盒异常: ${JSON.stringify(homeInteractive)}`);
-    else logPass(`首页高校 Agent 6 步交互工作流与原文溯源正常`);
-
-    if (!homeInteractive.dialogOpen || !homeInteractive.dialogClosed) logBug(`首页案例预览弹窗开关异常: ${JSON.stringify(homeInteractive)}`);
-    else logPass('首页案例预览弹窗打开/关闭正常');
-
-    // 测试首页案例 01 周报交互沙盒：3 份周报样例切换 + 事项点击回查原文高亮 <mark>
-    const weeklyInteractive = await cdp.eval(`(async () => {
-      const card = document.getElementById('preview-weekly-intelligence');
-      const workflowTab = [...card.querySelectorAll('button[role="tab"]')].find(b => b.textContent.includes('交互工作流'));
-      workflowTab.click();
-      await new Promise(r => setTimeout(r, 120));
-      const scenarioBtns = [...card.querySelectorAll('.demo-scenarios button')];
-      let allScenariosOk = scenarioBtns.length === 3;
-      let quoteMarkFound = false;
-      for (const sBtn of scenarioBtns) {
-        sBtn.click();
-        await new Promise(r => setTimeout(r, 50));
-        // 点击第 2 步（AI 结构化）并点击第一条事项触发原文高亮
-        const step2 = card.querySelectorAll('.demo-step-list button')[1];
-        step2?.click();
-        await new Promise(r => setTimeout(r, 50));
-        const itemBtn = card.querySelector('button.demo-data-row');
-        itemBtn?.click();
-        await new Promise(r => setTimeout(r, 50));
-        const markText = card.querySelector('.demo-source mark')?.textContent?.trim();
-        if (markText && markText.length > 3) quoteMarkFound = true;
-        else allScenariosOk = false;
-      }
-      // 展开数据结构 JSON 面板
-      const payloadSummary = card.querySelector('.demo-payload summary');
-      payloadSummary?.click();
-      await new Promise(r => setTimeout(r, 40));
-      const payloadOpen = card.querySelector('.demo-payload')?.open === true;
-      return { scenarioCount: scenarioBtns.length, allScenariosOk, quoteMarkFound, payloadOpen };
-    })()`);
-
-    if (!weeklyInteractive.allScenariosOk || !weeklyInteractive.quoteMarkFound || !weeklyInteractive.payloadOpen) {
-      logBug(`周报交互沙盒样例/原句高亮异常: ${JSON.stringify(weeklyInteractive)}`);
+    if (
+      uniInteractive.elimCount < 1 ||
+      !uniInteractive.quoteOpened ||
+      !uniInteractive.reportRendered ||
+      !uniInteractive.gateBlocked ||
+      !uniInteractive.gateFixedPass ||
+      !uniInteractive.dialogOpen ||
+      !uniInteractive.dialogClosed
+    ) {
+      logBug(`高校 Agent 工作台或弹窗预览异常: ${JSON.stringify(uniInteractive)}`);
     } else {
-      logPass('周报交互沙盒 3 份样例切换、原句高亮回查与 JSON 结构展开全部正常');
+      logPass('02 高校 Agent 工作台两阶段筛选、交付报告生成、PDF 终端流脏数据拦截修复与弹窗开关全部正常');
+    }
+
+    // 测试首页案例 03 医疗双语客服工作台：Typing + 流式回复 + 自动提取线索 + 高风险护栏震动拦截 + 人工顾问接单
+    const medInteractive = await cdp.eval(`(async () => {
+      const card = document.getElementById('preview-medical-concierge');
+      const presetLead = [...card.querySelectorAll('.quick-try-pill')].find(b => b.textContent.includes('提取线索'));
+      presetLead?.click();
+      await new Promise(r => setTimeout(r, 900));
+
+      const leadTextAfterPreset = card.querySelector('.med-lead-card')?.textContent || '';
+      const extractedEmail = leadTextAfterPreset.includes('alex.chen@example.com') && leadTextAfterPreset.includes('英国伦敦');
+
+      // 在真实输入框发送高风险临床问诊语句，测试安全护栏强制拦截
+      const input = card.querySelector('.med-input');
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      setter.call(input, '肺部8mm磨玻璃结节是不是恶性肿瘤，吃什么靶向药？');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      card.querySelector('.med-send-btn')?.click();
+      await new Promise(r => setTimeout(r, 950));
+
+      const guardrailDanger = !!card.querySelector('.med-guard-card.danger');
+      const handoffPriority = !!card.querySelector('.med-handoff-status.human_priority');
+
+      // 点击“模拟人工顾问接手会话”验证真人顾问气泡插入
+      card.querySelector('.med-takeover-btn')?.click();
+      await new Promise(r => setTimeout(r, 150));
+      const humanJoinedBubble = !!card.querySelector('.med-bubble.human_agent_joined');
+
+      return { extractedEmail, guardrailDanger, handoffPriority, humanJoinedBubble };
+    })()`);
+
+    if (
+      !medInteractive.extractedEmail ||
+      !medInteractive.guardrailDanger ||
+      !medInteractive.handoffPriority ||
+      !medInteractive.humanJoinedBubble
+    ) {
+      logBug(`03 医疗双语工作台线索提取、护栏拦截或顾问接单异常: ${JSON.stringify(medInteractive)}`);
+    } else {
+      logPass('03 医疗双语工作台流式回复、线索提取、安全护栏拦截与人工顾问接单闭环全部正常');
     }
 
     // ==================== 1.5 首页平板端 (1024x768) 溢出与卡片检查 ====================
@@ -422,6 +540,14 @@ async function runE2E() {
       firstDrawerBtn?.click();
       await new Promise(r => setTimeout(r, 60));
 
+      // 移动端打开交互工作台弹窗并检查弹窗内无水平溢出
+      document.querySelector('.mobile-case-card .m-case-visual')?.click();
+      await new Promise(r => setTimeout(r, 150));
+      const mobileDialog = document.querySelector('dialog.case-dialog[open]');
+      const mobileDialogOverflow = mobileDialog ? mobileDialog.scrollWidth - mobileDialog.clientWidth : 999;
+      document.querySelector('dialog.case-dialog .dialog-top button')?.click();
+      await new Promise(r => setTimeout(r, 80));
+
       // 3. 工作方法工程轴（默认展开第1步，点第2步可切换）
       const axisTriggers = [...document.querySelectorAll('.method-axis-trigger')];
       const axisInitialOpen = document.querySelectorAll('.method-axis-item.open').length === 1;
@@ -460,6 +586,7 @@ async function runE2E() {
         pillCount: pills.length,
         switchedToSecond,
         drawerOpened,
+        mobileDialogOverflow,
         axisInitialOpen,
         axisSwitched,
         hasProfileDarkCard,
@@ -487,6 +614,8 @@ async function runE2E() {
     } else {
       logPass('首页移动端核心案例自动轮播、胶囊切卡与交付细节抽屉均正常');
     }
+    if (homeMobile.mobileDialogOverflow > 2) logBug(`移动端案例交互弹窗存在水平溢出: +${homeMobile.mobileDialogOverflow}px`);
+    else logPass('首页移动端案例交互弹窗无水平溢出');
 
     if (!homeMobile.axisInitialOpen || !homeMobile.axisSwitched) logBug('移动端工作方法左侧工程轴展开切换异常');
     else logPass('首页移动端工作方法左侧工程轴（样式 C）展开切换正常');
