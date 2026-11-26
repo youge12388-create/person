@@ -214,95 +214,76 @@ async function runE2E() {
       if (!row.sameLine) logBug(`首屏背书栏指标与标题发生折行挤压: "${row.value}" / "${row.title}"`);
     }
 
-    // 测试首页案例 01~03 一键试玩快捷联动 + 运行动画 + 三套真实业务闭环
+    // 测试首页默认全部为“交付概览” + 01 一键试玩与极简大白话交互闭环
     const weeklyInteractive = await cdp.eval(`(async () => {
-      const card = document.getElementById('preview-weekly-intelligence');
-      // 01 默认直出清爽双栏驾驶舱（左：结构化事项+原文舱 | 右：周报分析 Agent 对话舱）
-      await new Promise(r => setTimeout(r, 950));
-      const defaultWorkbenchOpen = !!card.querySelector('[data-workbench="weekly"]')
-        && !!card.querySelector('.wk-left-col')
-        && !!card.querySelector('.wk-agent-col');
+      const allDefaultOverview = ['preview-weekly-intelligence', 'preview-university-agent', 'preview-medical-concierge']
+        .every(id => {
+          const el = document.getElementById(id);
+          return !!el.querySelector('.case-visual') && !el.querySelector('.wb-app-frame');
+        });
 
-      // 切回“交付概览”再点“⚡ 问 Agent：谁在重复造轮子”验证一键试玩联动
-      const overviewTab = [...card.querySelectorAll('button[role="tab"]')].find(b => b.textContent.includes('交付概览'));
-      overviewTab?.click();
-      await new Promise(r => setTimeout(r, 80));
-      const presetBtn = [...card.querySelectorAll('.quick-try-pill')].find(b => b.textContent.includes('重复造轮子'));
+      const card = document.getElementById('preview-weekly-intelligence');
+      const presetBtn = [...card.querySelectorAll('.quick-try-pill')].find(b => b.textContent.includes('揪出撞车'));
       presetBtn?.click();
-      await new Promise(r => setTimeout(r, 1100));
+      await new Promise(r => setTimeout(r, 950));
 
       const workbenchVisible = !!card.querySelector('[data-workbench="weekly"]');
-      const dupBadges = card.querySelectorAll('.wb-dup-tag').length;
+      const hasRiskCards = card.querySelectorAll('.wk-brief-card').length >= 2;
 
-      // 点击第一条事项触发左下角原文舱 <mark> 高亮
-      const firstItem = card.querySelector('.wk-task-row');
-      firstItem?.click();
-      await new Promise(r => setTimeout(r, 100));
-      const markText = card.querySelector('.wk-source-dock mark')?.textContent?.trim();
+      // 点选第二张隐患卡验证手动展开员工原话（第一张已被预设自动展开）
+      const secondCard = card.querySelectorAll('.wk-brief-card')[1];
+      secondCard?.click();
+      await new Promise(r => setTimeout(r, 80));
+      const quoteExpanded = !!card.querySelector('.wk-quote-drawer mark');
 
-      // 点击卡片内“派发核实”或“合并排期”测试闭环计数更新
-      const actionBtn = card.querySelector('.wk-row-action');
-      actionBtn?.click();
-      await new Promise(r => setTimeout(r, 260));
+      card.querySelector('.wb-inline-action-btn')?.click();
+      await new Promise(r => setTimeout(r, 240));
       const closedText = card.querySelector('.wk-closed-badge')?.textContent || '';
-      const resolvedProgressed = closedText.includes('已闭环 1') || closedText.includes('已清零');
+      const resolvedProgressed = closedText.includes('已处理 1') || closedText.includes('完毕');
 
-      // 在右侧周报 Agent 输入框提问未写明负责人的“数据清洗谁负责、哪天上线？”，验证零脑补拦截与流式回答
       const chatInput = card.querySelector('.wk-chat-input');
       const inputSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-      inputSetter.call(chatInput, '客户历史数据清洗谁负责、哪天上线？');
+      inputSetter.call(chatInput, '客户历史数据清洗哪天能弄完？');
       chatInput.dispatchEvent(new Event('input', { bubbles: true }));
       card.querySelector('.wk-send-btn')?.click();
-      await new Promise(r => setTimeout(r, 1000));
-
+      await new Promise(r => setTimeout(r, 900));
       const guardBubbleText = card.querySelector('.wk-guard-bubble')?.textContent || '';
-      const agentNoFabricationOk = guardBubbleText.includes('拒绝脑补') && guardBubbleText.includes('W-205');
+      const agentNoFabricationOk = guardBubbleText.includes('绝不') && guardBubbleText.includes('没写');
 
-      // 切换“录入周报实测”提交含矛盾状态的新周报，验证左栏拆解标疑且右栏 Agent 自动发诊断消息
-      const editToggle = [...card.querySelectorAll('.wk-scope-tab')].find(b => b.textContent.includes('录入周报'));
-      editToggle?.click();
+      const customTab = [...card.querySelectorAll('.wk-scope-tab')].find(b => b.textContent.includes('写一句周报'));
+      customTab?.click();
       await new Promise(r => setTimeout(r, 80));
       const textarea = card.querySelector('.wb-textarea');
       const taSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
       taSetter.call(textarea, '研发组：结算网关已经完成。补充：结算网关回调仍有报错，尚未通过验收。');
       textarea.dispatchEvent(new Event('input', { bubbles: true }));
       card.querySelector('.wb-editor-actions .wb-btn-primary')?.click();
-      await new Promise(r => setTimeout(r, 1200));
-
-      const conflictText = card.querySelector('.wk-conflict-pill')?.textContent || '';
-      const hasConflictParsed = conflictText.includes('前后状态矛盾');
-
-      // 展开实时 JSON 数据结构面板
-      const payloadSummary = card.querySelector('.demo-payload summary');
-      payloadSummary?.click();
-      await new Promise(r => setTimeout(r, 60));
-      const payloadOpen = card.querySelector('.demo-payload')?.open === true;
+      await new Promise(r => setTimeout(r, 950));
+      const hasConflictParsed = (card.textContent || '').includes('前后矛盾');
 
       return {
-        defaultWorkbenchOpen,
+        allDefaultOverview,
         workbenchVisible,
-        dupBadges,
-        markText,
+        hasRiskCards,
+        quoteExpanded,
         resolvedProgressed,
         agentNoFabricationOk,
         hasConflictParsed,
-        payloadOpen,
       };
     })()`);
 
     if (
-      !weeklyInteractive.defaultWorkbenchOpen ||
+      !weeklyInteractive.allDefaultOverview ||
       !weeklyInteractive.workbenchVisible ||
-      weeklyInteractive.dupBadges < 2 ||
-      !weeklyInteractive.markText ||
+      !weeklyInteractive.hasRiskCards ||
+      !weeklyInteractive.quoteExpanded ||
       !weeklyInteractive.resolvedProgressed ||
       !weeklyInteractive.agentNoFabricationOk ||
-      !weeklyInteractive.hasConflictParsed ||
-      !weeklyInteractive.payloadOpen
+      !weeklyInteractive.hasConflictParsed
     ) {
-      logBug(`周报双栏驾驶舱与 Agent 对话实操异常: ${JSON.stringify(weeklyInteractive)}`);
+      logBug(`默认交付概览或 01 周报交互异常: ${JSON.stringify(weeklyInteractive)}`);
     } else {
-      logPass('01 周报清爽双栏驾驶舱、原文溯源高亮、异常闭环与周报 Agent 零脑补对话全部正常');
+      logPass('首页默认全为交付概览，01 周报极简看板、员工原话溯源、异常处置与 AI 秘书防瞎编问答全部正常');
     }
 
     // 测试首页案例 02 高校 Agent 工作台：双阶段筛选 + 选校单生成交付报告 + PDF 终端流拦截修复 + 弹窗预览
@@ -329,14 +310,14 @@ async function runE2E() {
       await new Promise(r => setTimeout(r, 650));
       const reportRendered = !!card.querySelector('.uni-report-preview');
 
-      // 切换到“后台 PDF 采集与脏数据守门”模式并等待终端流跑完
-      const collectorBtn = [...card.querySelectorAll('.wb-pill')].find(b => b.textContent.includes('脏数据守门'));
+      // 切换到“自动扒官网 PDF 简章入表”模式
+      const collectorBtn = [...card.querySelectorAll('.wk-scope-tab')].find(b => b.textContent.includes('PDF'));
       collectorBtn?.click();
-      await new Promise(r => setTimeout(r, 750));
-      const gateBlocked = card.querySelector('.uni-gate-pill')?.textContent === 'BLOCKED';
+      await new Promise(r => setTimeout(r, 650));
+      const gateBlocked = (card.querySelector('.uni-gate-pill')?.textContent || '').includes('拦截');
       card.querySelector('.uni-gate-fail .wb-btn-primary')?.click();
-      await new Promise(r => setTimeout(r, 750));
-      const gateFixedPass = card.querySelector('.uni-gate-pill')?.textContent === 'PASS';
+      await new Promise(r => setTimeout(r, 650));
+      const gateFixedPass = (card.querySelector('.uni-gate-pill')?.textContent || '').includes('已安全入表');
 
       // 切回交付概览并点击预览图打开 Dialog
       const overviewTab = [...card.querySelectorAll('button[role="tab"]')].find(b => b.textContent.includes('交付概览'));
@@ -369,9 +350,9 @@ async function runE2E() {
     // 测试首页案例 03 医疗双语客服工作台：Typing + 流式回复 + 自动提取线索 + 高风险护栏震动拦截 + 人工顾问接单
     const medInteractive = await cdp.eval(`(async () => {
       const card = document.getElementById('preview-medical-concierge');
-      const presetLead = [...card.querySelectorAll('.quick-try-pill')].find(b => b.textContent.includes('提取线索'));
+      const presetLead = [...card.querySelectorAll('.quick-try-pill')].find(b => b.textContent.includes('名片'));
       presetLead?.click();
-      await new Promise(r => setTimeout(r, 900));
+      await new Promise(r => setTimeout(r, 850));
 
       const leadTextAfterPreset = card.querySelector('.med-lead-card')?.textContent || '';
       const extractedEmail = leadTextAfterPreset.includes('alex.chen@example.com') && leadTextAfterPreset.includes('英国伦敦');
@@ -540,13 +521,46 @@ async function runE2E() {
       firstDrawerBtn?.click();
       await new Promise(r => setTimeout(r, 60));
 
-      // 移动端打开交互工作台弹窗并检查弹窗内无水平溢出
-      document.querySelector('.mobile-case-card .m-case-visual')?.click();
-      await new Promise(r => setTimeout(r, 150));
-      const mobileDialog = document.querySelector('dialog.case-dialog[open]');
-      const mobileDialogOverflow = mobileDialog ? mobileDialog.scrollWidth - mobileDialog.clientWidth : 999;
-      document.querySelector('dialog.case-dialog .dialog-top button')?.click();
-      await new Promise(r => setTimeout(r, 80));
+      // 移动端打开三大交互工作台弹窗，全面校验单栏、无溢出、头部无缝隙、卡片不被裁切
+      const dialogAudits = [];
+      for (let i = 0; i < 3; i += 1) {
+        pills[i]?.click();
+        await new Promise(r => setTimeout(r, 220));
+        const cards = [...document.querySelectorAll('.mobile-case-card')];
+        cards[i]?.querySelector('.m-case-visual')?.click();
+        await new Promise(r => setTimeout(r, 750));
+        const dlg = document.querySelector('dialog.case-dialog[open]');
+        const scrollBody = dlg?.querySelector('.dialog-scroll-body');
+        if (scrollBody) scrollBody.scrollTop = 260;
+        await new Promise(r => setTimeout(r, 80));
+        const topEl = dlg?.querySelector('.dialog-top');
+        const dlgRect = dlg?.getBoundingClientRect();
+        const topRect = topEl?.getBoundingClientRect();
+        const appBarRect = dlg?.querySelector('.wb-app-bar')?.getBoundingClientRect();
+        const guardTag = dlg?.querySelector('.wk-agent-guard-tag');
+        const uniCards = [...(dlg?.querySelectorAll('.uni-card') || [])];
+        const uniCardsIntact = uniCards.every((c) => {
+          const r = c.getBoundingClientRect();
+          const btn = c.querySelector('.uni-shortlist-btn')?.getBoundingClientRect();
+          return r.height >= 100 && (!btn || btn.bottom <= r.bottom + 1);
+        });
+        const scopeTabs = [...(dlg?.querySelectorAll('.wk-scope-tab') || [])];
+        const scopeTabsSingleRow = scopeTabs.length < 2 || scopeTabs.every(
+          (t) => Math.abs(t.getBoundingClientRect().top - scopeTabs[0].getBoundingClientRect().top) < 6
+        );
+        dialogAudits.push({
+          idx: i,
+          overflow: dlg ? dlg.scrollWidth - dlg.clientWidth : 999,
+          headerSeamGap: dlgRect && topRect ? Math.round(topRect.top - dlgRect.top) : 999,
+          appBarHeight: appBarRect ? Math.round(appBarRect.height) : 0,
+          guardTagHeight: guardTag ? Math.round(guardTag.getBoundingClientRect().height) : 0,
+          uniCardsIntact,
+          scopeTabsSingleRow,
+        });
+        dlg?.querySelector('.dialog-top button')?.click();
+        await new Promise(r => setTimeout(r, 120));
+      }
+      const mobileDialogOverflow = Math.max(...dialogAudits.map((a) => a.overflow));
 
       // 3. 工作方法工程轴（默认展开第1步，点第2步可切换）
       const axisTriggers = [...document.querySelectorAll('.method-axis-trigger')];
@@ -587,6 +601,7 @@ async function runE2E() {
         switchedToSecond,
         drawerOpened,
         mobileDialogOverflow,
+        dialogAudits,
         axisInitialOpen,
         axisSwitched,
         hasProfileDarkCard,
@@ -616,6 +631,16 @@ async function runE2E() {
     }
     if (homeMobile.mobileDialogOverflow > 2) logBug(`移动端案例交互弹窗存在水平溢出: +${homeMobile.mobileDialogOverflow}px`);
     else logPass('首页移动端案例交互弹窗无水平溢出');
+    for (const da of homeMobile.dialogAudits || []) {
+      if (da.headerSeamGap > 2) logBug(`移动端工作台#${da.idx + 1} 弹窗头部吸顶存在露缝: ${da.headerSeamGap}px`);
+      if (da.appBarHeight > 48) logBug(`移动端工作台#${da.idx + 1} 状态栏发生折行过高: ${da.appBarHeight}px`);
+      if (da.guardTagHeight > 28) logBug(`移动端工作台#${da.idx + 1} 徽章文字发生折行: ${da.guardTagHeight}px`);
+      if (!da.uniCardsIntact) logBug(`移动端工作台#${da.idx + 1} 院校卡片被压扁裁切`);
+      if (!da.scopeTabsSingleRow) logBug(`移动端工作台#${da.idx + 1} 顶部切换 Tab 发生折行`);
+    }
+    if ((homeMobile.dialogAudits || []).every((da) => da.headerSeamGap <= 2 && da.appBarHeight <= 48 && da.guardTagHeight <= 28 && da.uniCardsIntact && da.scopeTabsSingleRow)) {
+      logPass('首页移动端 3 大交互工作台弹窗单栏、头部无缝隙、状态栏单行、卡片无裁切全部通过');
+    }
 
     if (!homeMobile.axisInitialOpen || !homeMobile.axisSwitched) logBug('移动端工作方法左侧工程轴展开切换异常');
     else logPass('首页移动端工作方法左侧工程轴（样式 C）展开切换正常');

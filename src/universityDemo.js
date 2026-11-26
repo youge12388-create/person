@@ -3,21 +3,21 @@
 export const GPA_PROFILES = [
   {
     key: 'good_4scale',
-    label: '3.6 / 4.0（优秀档）',
+    label: '3.6 / 4.0（优秀）',
     tier: 1,
     originalScale: '4.0 分制',
     note: '锁定原始 4.0 分制为第 1 档，禁止换算为百分制；触发 985/211 占比 ≥ 40% 配比守门。',
   },
   {
     key: 'mid_100scale',
-    label: '76 / 100（中等档）',
+    label: '76 / 100（中等）',
     tier: 3,
     originalScale: '百分制',
     note: '锁定原始百分制为第 3 档；触发中等及以下档位配比本科“学院”保底守门（排除大专）。',
   },
   {
     key: 'weak_5scale',
-    label: '2.6 / 5.0（偏弱档）',
+    label: '2.6 / 5.0（偏弱）',
     tier: 4,
     originalScale: '5.0 分制',
     note: '锁定原始 5.0 分制为第 4 档；硬门槛自动淘汰高要求项目，优先匹配本科“学院”保底。',

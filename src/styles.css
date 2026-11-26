@@ -1345,8 +1345,27 @@ img, svg { display: block; }
   .portfolio-hero-compact { padding-block: 18px 20px; }
   .portfolio-hero-row { align-items: flex-start; gap: 16px; }
   .portfolio-sub { font-size: 14px; line-height: 1.68; text-wrap: pretty; }
-  .portfolio-filter-bar { gap: 6px; }
-  .filter-pill { min-height: 32px; padding: 0 11px; font-size: 12.5px; }
+  .portfolio-filter-bar {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px;
+    padding-bottom: 2px;
+  }
+  .portfolio-filter-bar::-webkit-scrollbar { display: none; }
+  .filter-pill { flex-shrink: 0; white-space: nowrap; min-height: 32px; padding: 0 11px; font-size: 12px; }
+  .quick-try-bar.compact .quick-try-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .quick-try-bar.compact .quick-try-pills::-webkit-scrollbar { display: none; }
+  .quick-try-bar.compact .quick-try-pill { flex-shrink: 0; white-space: nowrap; }
+  .archive-card-top { gap: 6px; }
+  .archive-card-impact { white-space: nowrap; font-size: 10.5px; }
   .portfolio-section { padding-block: 24px 18px; }
   .portfolio-archive-band { padding-block: 20px 44px; }
   .portfolio-section-bar {
@@ -1753,8 +1772,8 @@ img, svg { display: block; }
   }
   .m-hero-top {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 174px;
-    gap: 2px;
+    grid-template-columns: minmax(0, 1fr) 158px;
+    gap: 6px;
     align-items: end;
     border-bottom: 1px solid var(--line);
   }
@@ -1801,8 +1820,8 @@ img, svg { display: block; }
     color: var(--accent);
   }
   .m-hero-portrait-cutout {
-    margin: 0 -8px 0 -4px;
-    width: 186px;
+    margin: 0 -6px 0 0;
+    width: 164px;
     position: relative;
     z-index: 1;
     background: transparent;
@@ -1846,11 +1865,12 @@ img, svg { display: block; }
     position: relative;
     z-index: 3;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
   .m-bento-main {
     grid-column: 1 / -1;
+    min-width: 0;
     padding: 15px 16px;
     border-radius: 14px;
     background: linear-gradient(135deg, var(--navy) 0%, #163772 100%);
@@ -1867,10 +1887,12 @@ img, svg { display: block; }
     gap: 6px;
   }
   .m-bento-kicker {
+    min-width: 0;
     font-size: 11.5px;
     font-weight: 700;
     color: #7dd3fc;
     letter-spacing: 0.015em;
+    line-height: 1.35;
   }
   .m-bento-main .m-bento-arrow {
     color: #93c5fd;
@@ -1892,6 +1914,7 @@ img, svg { display: block; }
     text-wrap: pretty;
   }
   .m-bento-sub {
+    min-width: 0;
     padding: 13px 13px 14px;
     border-radius: 14px;
     background: var(--surface);
@@ -1912,12 +1935,14 @@ img, svg { display: block; }
   }
   .m-bento-sub strong {
     margin-top: 2px;
-    font-size: 16px;
+    font-size: clamp(14px, 4.1vw, 16px);
     font-weight: 800;
     line-height: 1.25;
     letter-spacing: -0.02em;
     color: var(--ink);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .m-bento-sub strong em {
     font-style: normal;
@@ -2570,7 +2595,7 @@ img, svg { display: block; }
   }
   .skill-compact-row {
     display: grid;
-    grid-template-columns: 74px minmax(0, 1fr);
+    grid-template-columns: 74px minmax(0, 1fr) 16px;
     align-items: center;
     gap: 8px;
     padding: 8px 11px;
@@ -2578,6 +2603,14 @@ img, svg { display: block; }
     border: 1px solid var(--line);
     background: var(--bg-alt);
     cursor: pointer;
+  }
+  .skill-compact-chevron {
+    color: var(--muted);
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+  .skill-compact-row.expanded .skill-compact-chevron {
+    color: var(--accent);
+    transform: rotate(180deg);
   }
   .skill-compact-row dt {
     font-size: 12px;
@@ -2600,6 +2633,52 @@ img, svg { display: block; }
   .skill-compact-row.expanded dd {
     white-space: normal;
     line-height: 1.55;
+  }
+
+  /* 点击热区不低于 32px，避免移动端误触 */
+  .back-top {
+    min-height: 32px;
+    padding-inline: 2px;
+  }
+  .contact-list dd > a,
+  .contact-list dd > span {
+    min-height: 32px;
+  }
+  .archive-card-more {
+    min-height: 32px;
+    padding: 4px 6px;
+  }
+  .mobile-carousel-dots button {
+    position: relative;
+  }
+  .mobile-carousel-dots button::after {
+    content: '';
+    position: absolute;
+    inset: -11px -7px;
+  }
+}
+
+/* 超窄屏（≤360px）：首屏人物与标题改为上下堆叠，避免文案被挤压裁切 */
+@media (max-width: 360px) {
+  .m-hero-top {
+    display: block;
+  }
+  .m-hero-head {
+    padding-bottom: 8px;
+  }
+  .m-hero-portrait-cutout {
+    width: 132px;
+    margin: 0 0 0 auto;
+  }
+  .m-bento-kicker,
+  .m-bento-label {
+    font-size: 11px;
+  }
+  .m-bento-sub p {
+    font-size: 11px;
+  }
+  .m-hero-actions {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -205,7 +205,7 @@ function Hero() {
           </div>
 
           <p className="m-hero-intro">
-            面向真实业务现场拆解低效流程，把数据、模型、规则与现有系统接成一条可追溯、可复核的 AI 工作流。
+            面向真实业务现场，把数据、模型与规则接成可追溯、可复核的 AI 工作流。
           </p>
 
           <div className="m-hero-actions">
@@ -220,7 +220,7 @@ function Hero() {
                 <ArrowUpRight size={15} className="m-bento-arrow" aria-hidden="true" />
               </div>
               <strong>3 所/周 → 10+ 所/天</strong>
-              <p>自研后台 Skill 自动搜官网、解析 PDF 写表入库，直接省掉外包团队</p>
+              <p>自研后台 Skill 自动抓官网、解 PDF 入库，直接替代外包</p>
             </a>
 
             <a className="m-bento-sub" href="#preview-weekly-intelligence">
@@ -300,7 +300,7 @@ function Hero() {
 function ProjectRow({ project, onPreview }) {
   const demo = caseDemos[project.id];
   const reduced = useReducedMotion();
-  const [mode, setMode] = useState(() => (project.id === 'weekly-intelligence' ? 'workflow' : 'overview'));
+  const [mode, setMode] = useState('overview');
   const [activePreset, setActivePreset] = useState(null);
 
   const launchPreset = (presetKey) => {
@@ -576,11 +576,11 @@ function MobileCaseCarousel({ onPreview }) {
               <div className="m-case-compare">
                 <div className="m-case-compare-row">
                   <span className="m-compare-tag before">之前</span>
-                  <p>{project.before}</p>
+                  <p>{project.beforeShort ?? project.before}</p>
                 </div>
                 <div className="m-case-compare-row after">
                   <span className="m-compare-tag after">现在</span>
-                  <p>{project.after}</p>
+                  <p>{project.afterShort ?? project.after}</p>
                 </div>
               </div>
 
@@ -593,8 +593,8 @@ function MobileCaseCarousel({ onPreview }) {
                   setExpandedDetailId(isExpanded ? null : project.id);
                 }}
               >
-                <span>{project.deliverables.length} 项交付明细 · {project.stack.slice(0, 3).join(' / ')}</span>
-                <em>{isExpanded ? '收起 −' : '展开细节 +'}</em>
+                <span>查看 {project.deliverables.length} 项交付明细与技术栈</span>
+                <em>{isExpanded ? '收起 −' : '展开 +'}</em>
               </button>
 
               {isExpanded && (
@@ -678,7 +678,7 @@ function ProjectsSection() {
           label="Core Case Studies"
           title="用具体交付 证明业务优化能力"
           intro={isMobile
-            ? '左右滑动或等待自动切换 3 个旗舰案例，点开图片即可体验交互工作台。'
+            ? '滑动切换 3 个旗舰案例，点击图片体验交互工作台。'
             : '每个案例提供真实的交互工作台沙盒：可直接改写周报、调参选校或对话测试医疗护栏。'}
           aside={<a className="button-link" href={portfolioPath}>全部案例详情页 <ArrowRight size={16} /></a>}
         />
@@ -713,8 +713,8 @@ function ProjectsSection() {
 
         <div className="archive-teaser">
           <div>
-            <strong>更多实战与自动化案例（+{archiveCases.length} 个独立页）</strong>
-            <p>涵盖 RPA 订单管线、评论洞察看板、竞品监控、企业 AI SOP 与轻量助手矩阵，独立成页清爽浏览。</p>
+            <strong>{isMobile ? `更多实战案例（+${archiveCases.length}）` : `更多实战与自动化案例（+${archiveCases.length} 个独立页）`}</strong>
+            <p>{isMobile ? '含 RPA 订单、评论看板、竞品监控与企业 AI SOP 等。' : '涵盖 RPA 订单管线、评论洞察看板、竞品监控、企业 AI SOP 与轻量助手矩阵，独立成页清爽浏览。'}</p>
           </div>
           <a className="button-primary" href={archivePath}>
             进入实战案例库 <ArrowRight size={15} />
@@ -928,7 +928,7 @@ const skills = [
 
 const mobileExperienceShorts = [
   '华太西就教育科技',
-  '锦囊妙计（SOP 复用 +60% / 轻量助手）',
+  '锦囊妙计企业管理',
 ];
 
 function ExperienceSection() {
@@ -949,7 +949,7 @@ function ExperienceSection() {
               {profileSummary.badge}
             </span>
             <p className="profile-dark-headline">{profileSummary.headline}</p>
-            <p className="profile-dark-body">{profileSummary.body}</p>
+            <p className="profile-dark-body">{profileSummary.bodyShort ?? profileSummary.body}</p>
           </div>
 
           <ol className="exp-accordion-list">
@@ -993,10 +993,12 @@ function ExperienceSection() {
                   onClick={() => setExpandedSkill(isExpanded ? null : group)}
                   role="button"
                   tabIndex={0}
+                  aria-expanded={isExpanded}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedSkill(isExpanded ? null : group); } }}
                 >
                   <dt>{group}</dt>
                   <dd>{items}</dd>
+                  <ChevronDown size={14} className="skill-compact-chevron" aria-hidden="true" />
                 </div>
               );
             })}
@@ -1121,7 +1123,7 @@ const flagshipCategoryMap = {
   'medical-concierge': 'service',
 };
 
-function FlagshipCaseCard({ project, onOpenDemo }) {
+function FlagshipCaseCard({ project, onOpenDemo, isMobile = false }) {
   const demo = caseDemos[project.id];
   const [expanded, setExpanded] = useState(false);
 
@@ -1152,11 +1154,11 @@ function FlagshipCaseCard({ project, onOpenDemo }) {
           <div className="flagship-compare">
             <div className="flagship-compare-row">
               <span className="flagship-compare-tag before">之前</span>
-              <p>{project.before}</p>
+              <p>{isMobile ? (project.beforeShort ?? project.before) : project.before}</p>
             </div>
             <div className="flagship-compare-row">
               <span className="flagship-compare-tag after">现在</span>
-              <p>{project.after}</p>
+              <p>{isMobile ? (project.afterShort ?? project.after) : project.after}</p>
             </div>
           </div>
 
@@ -1334,7 +1336,7 @@ function PortfolioPage() {
               <ParticleTitle as="h1" variant="section" text={isMobile ? '核心旗舰案例' : '项目案例集'} />
               <p className="portfolio-sub">
                 {isMobile
-                  ? '3 个深度交付旗舰案例的架构与交互演示；更多 12 个实战与自动化案例已独立成页。'
+                  ? '3 个旗舰案例的架构与交互演示；更多 12 个实战案例见独立页。'
                   : `3 个旗舰深度交付案例 + ${archiveCases.length} 个轻量业务与自动化案例，按业务场景持续扩充。`}
               </p>
             </div>
@@ -1376,6 +1378,7 @@ function PortfolioPage() {
                   key={project.id}
                   project={project}
                   onOpenDemo={openDemoDialog}
+                  isMobile={isMobile}
                 />
               ))}
             </div>
@@ -1386,8 +1389,8 @@ function PortfolioPage() {
           <section className="portfolio-section page-width">
             <div className="archive-teaser" style={{ marginTop: 0 }}>
               <div>
-                <strong>更多实战与自动化案例（+{archiveCases.length} 个独立页）</strong>
-                <p>涵盖 RPA 订单管线、评论洞察看板、竞品监控、企业 AI SOP 与轻量助手矩阵，独立成页清爽浏览。</p>
+                <strong>更多实战案例（+{archiveCases.length}）</strong>
+                <p>含 RPA 订单、评论看板、竞品监控与企业 AI SOP 等。</p>
               </div>
               <a className="button-primary" href={archivePath}>
                 进入实战案例库 <ArrowRight size={15} />
@@ -1427,6 +1430,7 @@ function PortfolioPage() {
 }
 
 function ArchivePage() {
+  const isMobile = useIsMobile();
   const [category, setCategory] = useState('all');
 
   useEffect(() => {
@@ -1450,7 +1454,9 @@ function ArchivePage() {
               </div>
               <ParticleTitle as="h1" variant="section" text="更多实战与自动化案例" />
               <p className="portfolio-sub">
-                共 {archiveCases.length} 个轻量业务与自动化落地案例，按场景分类筛选，点击每张卡片可展开「之前 / 现在」对比详情。
+                {isMobile
+                  ? `${archiveCases.length} 个轻量业务与自动化案例，按场景筛选，点卡片展开详情。`
+                  : `共 ${archiveCases.length} 个轻量业务与自动化落地案例，按场景分类筛选，点击每张卡片可展开「之前 / 现在」对比详情。`}
               </p>
             </div>
             <div className="portfolio-filter-bar" role="tablist" aria-label="实战案例分类筛选">
